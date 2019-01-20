@@ -75,11 +75,11 @@ def convert(args):
 parser = argparse.ArgumentParser(prog='wif')
 subparsers = parser.add_subparsers(help='sub-command help')
 
-studio_parser = subparsers.add_parser('studio-convert', help='converts WIF outputted for 3D Studio to stdout')
+studio_parser = subparsers.add_parser('studio-convert', help='converts stdin (from raytracer) to series of pngs on stdout')
 studio_parser.add_argument('--format', type=str, default='png')
 studio_parser.set_defaults(func=studio_convert)
 
-convert_parser = subparsers.add_parser('convert', help='converts WIF outputted by for 3D Studio to files')
+convert_parser = subparsers.add_parser('convert', help='converts stdin (from raytracer) to png files')
 convert_parser.add_argument('filename', type=str)
 convert_parser.add_argument('--format', type=str, default='png')
 convert_parser.set_defaults(func=convert)
