@@ -8,76 +8,68 @@ import sys
 import re
 
 
-
-def studio_convert(args):
+def read_blocks(stream):
+    '''
+    Finds blocks delimited by <<< >>>
+    '''
     buffer = ''
 
     while True:
-        data = sys.stdin.read(10000)
+        data = stream.read(10000)
         buffer += data
 
         match = re.match(r'\s*<<<(.*)>>>(.*)', buffer, re.MULTILINE | re.DOTALL)
 
         while match:
-            b64frame = match.group(1)
+            block = match.group(1)
             buffer = match.group(2)
-            frame = base64.b64decode(b64frame)
 
-            width, height = struct.unpack('<2I', frame[:8])
-            pixels = list(struct.iter_unpack("3B", frame[8:]))
-
-            image = Image.new('RGB', (width, height))
-            image_buffer = image.load()
-
-            for y in range(height):
-                for x in range(width):
-                    i = y * width + x
-                    image_buffer[x, y] = pixels[i]
-
-            image.save(sys.stdout.buffer, format=args.format)
+            yield block
 
             match = re.match(r'\s*<<<(.*)>>>(.*)', buffer, re.MULTILINE | re.DOTALL)
 
-
         if not data:
             break
+
+
+def block_to_image(block):
+    '''
+    Takes a block of data, base64-decodes it and turns it into an image.
+    '''
+    decoded = base64.b64decode(block)
+    width, height = struct.unpack('<2I', decoded[:8])
+    pixels = list(struct.iter_unpack("3B", decoded[8:]))
+
+    image = Image.new('RGB', (width, height))
+    image_buffer = image.load()
+
+    for y in range(height):
+        for x in range(width):
+            i = y * width + x
+            image_buffer[x, y] = pixels[i]
+
+    return image
+
+
+def read_frames(stream):
+    for block in read_blocks(stream):
+        image = block_to_image(block)
+        image.save(sys.stdout.buffer, format=args.format)
+
+
+def studio_convert(args):
+    for block in read_blocks(sys.stdin):
+        image = block_to_image(block)
+        image.save(sys.stdout.buffer, format=args.format)
 
 
 def convert(args):
-    buffer = ''
-    index = 0
+    def filename(index):
+        return re.sub('%d', str(index).rjust(5, '0'), args.filename)
 
-    while True:
-        data = sys.stdin.read(10000)
-        buffer += data
-
-        match = re.match(r'\s*<<<(.*)>>>(.*)', buffer, re.MULTILINE | re.DOTALL)
-
-        while match:
-            b64frame = match.group(1)
-            buffer = match.group(2)
-            frame = base64.b64decode(b64frame)
-
-            width, height = struct.unpack('<2I', frame[:8])
-            pixels = list(struct.iter_unpack("3B", frame[8:]))
-
-            image = Image.new('RGB', (width, height))
-            image_buffer = image.load()
-
-            for y in range(height):
-                for x in range(width):
-                    i = y * width + x
-                    image_buffer[x, y] = pixels[i]
-
-            filename = re.sub(r'%d', str(index).rjust(5, '0'), args.filename)
-            index += 1
-            image.save(filename, format=args.format)
-
-            match = re.match(r'\s*<<<(.*)>>>(.*)', buffer, re.MULTILINE | re.DOTALL)
-
-
-        if not data:
-            break
+    for index, block in enumerate(read_blocks(sys.stdin)):
+        image = block_to_image(block)
+        image.save(filename(index), format=args.format)
 
 
 parser = argparse.ArgumentParser(prog='wif')
