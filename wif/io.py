@@ -57,9 +57,3 @@ def block_to_image(block):
     # Return image
     return image
 
-
-def read_frames(stream, format='png'):
-    for block in read_blocks(stream):
-        image = block_to_image(block)
-        image.save(sys.stdout.buffer, format=format)
-        image.close()
