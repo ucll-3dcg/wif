@@ -5,14 +5,14 @@ import sys
 import re
 
 
-def read_blocks(stream):
+def read_blocks(stream, block_size = 10000):
     '''
     Finds blocks delimited by <<< >>>
     '''
     buffer = ''
 
     while True:
-        data = stream.read(10000)
+        data = stream.read(block_size)
         buffer += data
 
         match = re.match(r'\s*<<<(.*)>>>(.*)', buffer, re.MULTILINE | re.DOTALL)
