@@ -57,3 +57,6 @@ def block_to_image(block):
     # Return image
     return image
 
+
+def read_frames(stream):
+    return ( block_to_image(block) for block in read_blocks(stream) )
