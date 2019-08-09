@@ -32,9 +32,7 @@ def extract(args):
         return re.sub('%d', str(index).rjust(5, '0'), args.output)
 
     with open_input_stream(args.input) as stream:
-        for index, block in enumerate(read_blocks(stream)):
-            image = block_to_image(block)
-
+        for index, image in enumerate(read_frames(stream)):
             with open_output_stream(filename(index)) as out:
                 image.save(out, format=args.format)
 
@@ -52,7 +50,6 @@ def info(args):
         else:
             for index, size in enumerate(sizes):
                 print(f"Frame {index} has size {size[0]}x{size[1]}")
-
 
 
 class Application(tk.Frame):
