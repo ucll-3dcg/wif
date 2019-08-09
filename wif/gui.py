@@ -3,9 +3,9 @@ from PIL import ImageTk
 
 
 class Application(tk.Frame):
-    def __init__(self, root, frames):
-        super().__init__(root)
-        self.root = root
+    def __init__(self, frames):
+        self.root = tk.Tk()
+        super().__init__(self.root)
         self.__images = [ ImageTk.PhotoImage(frame) for frame in frames ]
         self.__index = 0
         self.pack()

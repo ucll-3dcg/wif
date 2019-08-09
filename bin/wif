@@ -56,9 +56,7 @@ def info(args):
 def gui(args):
     with open_input_stream(args.input) as stream:
         frames = list(read_frames(stream))
-        root = tk.Tk()
-        app = Application(root, frames)
-        app.mainloop()
+        Application(frames).mainloop()
 
 
 parser = argparse.ArgumentParser(prog='wif')
