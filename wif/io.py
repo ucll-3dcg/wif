@@ -67,4 +67,8 @@ def block_to_image(block):
 
 
 def read_frames(stream):
-    return ( block_to_image(block) for block in read_blocks(stream) )
+    count = 0
+    for block in read_blocks(stream):
+        yield block_to_image(block)
+        count += 1
+        print(f"Processed frame {count}")
