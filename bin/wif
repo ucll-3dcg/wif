@@ -3,6 +3,8 @@
 from wif.io import *
 import contextlib
 import argparse
+import tkinter as tk
+from PIL import ImageTk
 import sys
 import re
 
@@ -62,6 +64,41 @@ def info(args):
                 print(f"Frame {index} has size {size[0]}x{size[1]}")
 
 
+
+class Application(tk.Frame):
+    def __init__(self, root, frames):
+        super().__init__(root)
+        self.root = root
+        self.__images = [ ImageTk.PhotoImage(frame) for frame in frames ]
+        self.__index = 0
+        self.pack()
+        self.__create_widgets()
+        self.__tick()
+
+    def __create_widgets(self):
+        self.__label = tk.Label(self)
+        self.__label.pack()
+        self.__update()
+
+    def __update(self):
+        image = self.__images[self.__index]
+        self.__label.configure(image=image)
+        self.__label.image = image
+
+    def __tick(self):
+        self.__index = (self.__index + 1) % len(self.__images)
+        self.__update()
+        self.root.after(1000 // 30, self.__tick)
+
+
+def gui(args):
+    with open_input_stream(args.input) as stream:
+        frames = list(read_frames(stream))
+        root = tk.Tk()
+        app = Application(root, frames)
+        app.mainloop()
+
+
 parser = argparse.ArgumentParser(prog='wif')
 subparsers = parser.add_subparsers(help='sub-command help')
 
@@ -74,6 +111,10 @@ subparser.set_defaults(func=extract)
 subparser = subparsers.add_parser('info', help='prints information about the given WIF file')
 subparser.add_argument('-i', '--input', type=str, default='STDIN')
 subparser.set_defaults(func=info)
+
+subparser = subparsers.add_parser('gui', help='opens GUI')
+subparser.add_argument('-i', '--input', type=str, default='STDIN')
+subparser.set_defaults(func=gui)
 
 args = parser.parse_args()
 args.func(args)
