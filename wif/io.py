@@ -5,42 +5,50 @@ import sys
 import re
 
 
-def read_blocks(stream, block_size = 10000):
+def read_blocks(stream, block_size = 10000000):
     '''
     Finds blocks delimited by <<< >>>
     '''
+    regex = r'\s*<<<(.*?)>>>\s*(.*)'
     buffer = ''
+    count = 0
+    end_reached = False
 
-    while True:
+    while not end_reached:
         data = stream.read(block_size)
+
+        if not data:
+            print("Unexpected EOF")
+            sys.exit(-1)
+
         buffer += data
 
-        match = re.match(r'\s*<<<(.*)>>>(.*)', buffer, re.MULTILINE | re.DOTALL)
+        match = re.match(regex, buffer, re.MULTILINE | re.DOTALL)
 
         while match:
             block = match.group(1)
             buffer = match.group(2)
 
-            yield block
+            # Decode base64
+            decoded = base64.b64decode(block)
 
-            match = re.match(r'\s*<<<(.*)>>>(.*)', buffer, re.MULTILINE | re.DOTALL)
+            if len(decoded) == 4:
+                end_reached = True
+            else:
+                yield decoded
 
-        if not data:
-            break
+            match = re.match(regex, buffer, re.MULTILINE | re.DOTALL)
 
 
 def block_to_image(block):
     '''
     Takes a block of data, base64-decodes it and turns it into an image.
     '''
-    # Decode base64
-    decoded = base64.b64decode(block)
-
     # Read two little endian 32 bit integers
-    width, height = struct.unpack('<2I', decoded[:8])
+    width, height = struct.unpack('<2I', block[:8])
 
     # Read groups of 3 unsigned chars
-    pixels = list(struct.iter_unpack("3B", decoded[8:]))
+    pixels = list(struct.iter_unpack("3B", block[8:]))
 
     # Create image
     image = Image.new('RGB', (width, height))
