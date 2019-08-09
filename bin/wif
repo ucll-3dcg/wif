@@ -10,21 +10,12 @@ import re
 
 
 @contextlib.contextmanager
-def open_stdin():
-    yield sys.stdin
-
-
-@contextlib.contextmanager
-def open_file(filename):
-    with open(filename) as file:
-        yield file
-
-
 def open_input_stream(filename):
     if filename == 'STDIN':
-        return open_stdin()
+        yield sys.stdin()
     else:
-        return open_file(filename)
+        with open(filename) as file:
+            yield file
 
 
 @contextlib.contextmanager
