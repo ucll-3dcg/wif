@@ -46,6 +46,22 @@ def extract(args):
                 image.save(out, format=args.format)
 
 
+def info(args):
+    with open_input_stream(args.input) as stream:
+        sizes = []
+        for index, block in enumerate(read_blocks(stream)):
+            image = block_to_image(block)
+            sizes.append((image.width, image.height))
+            image.close()
+        if len(set(sizes)) == 1:
+            width = sizes[0][0]
+            height = sizes[0][1]
+            print(f"{len(sizes)} frames, each has size {width}x{height}")
+        else:
+            for index, size in enumerate(sizes):
+                print(f"Frame {index} has size {size[0]}x{size[1]}")
+
+
 parser = argparse.ArgumentParser(prog='wif')
 subparsers = parser.add_subparsers(help='sub-command help')
 
@@ -54,6 +70,10 @@ studio_parser.add_argument('--format', type=str, default='png')
 studio_parser.add_argument('-i', '--input', type=str, default='STDIN')
 studio_parser.add_argument('-o', '--output', type=str, default='frame%d.png')
 studio_parser.set_defaults(func=extract)
+
+studio_parser = subparsers.add_parser('info', help='prints information about the given WIF file')
+studio_parser.add_argument('-i', '--input', type=str, default='STDIN')
+studio_parser.set_defaults(func=info)
 
 args = parser.parse_args()
 args.func(args)
