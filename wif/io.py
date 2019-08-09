@@ -5,7 +5,7 @@ import sys
 import re
 
 
-def read_blocks(stream, block_size = 10000000):
+def read_blocks(stream, block_size = 5000000):
     '''
     Finds blocks delimited by <<< >>>
     '''
