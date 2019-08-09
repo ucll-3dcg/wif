@@ -9,4 +9,5 @@ setup(name='wif',
       license='MIT',
       packages=['wif'],
       scripts=['bin/wif'],
+      install_requires=['pillow'],
       zip_safe=False)
