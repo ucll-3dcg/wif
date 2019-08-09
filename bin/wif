@@ -42,8 +42,7 @@ def extract(args):
 def info(args):
     with open_input_stream(args.input) as stream:
         sizes = []
-        for index, block in enumerate(read_blocks(stream)):
-            image = block_to_image(block)
+        for index, image in enumerate(read_frames(stream)):
             sizes.append((image.width, image.height))
             image.close()
         if len(set(sizes)) == 1:
