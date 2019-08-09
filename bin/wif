@@ -65,15 +65,15 @@ def info(args):
 parser = argparse.ArgumentParser(prog='wif')
 subparsers = parser.add_subparsers(help='sub-command help')
 
-studio_parser = subparsers.add_parser('extract', help='extract frames from the wif into separate files')
-studio_parser.add_argument('--format', type=str, default='png')
-studio_parser.add_argument('-i', '--input', type=str, default='STDIN')
-studio_parser.add_argument('-o', '--output', type=str, default='frame%d.png')
-studio_parser.set_defaults(func=extract)
+subparser = subparsers.add_parser('extract', help='extract frames from the wif into separate files')
+subparser.add_argument('--format', type=str, default='png')
+subparser.add_argument('-i', '--input', type=str, default='STDIN')
+subparser.add_argument('-o', '--output', type=str, default='frame%d.png')
+subparser.set_defaults(func=extract)
 
-studio_parser = subparsers.add_parser('info', help='prints information about the given WIF file')
-studio_parser.add_argument('-i', '--input', type=str, default='STDIN')
-studio_parser.set_defaults(func=info)
+subparser = subparsers.add_parser('info', help='prints information about the given WIF file')
+subparser.add_argument('-i', '--input', type=str, default='STDIN')
+subparser.set_defaults(func=info)
 
 args = parser.parse_args()
 args.func(args)
