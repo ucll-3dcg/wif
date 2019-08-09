@@ -33,5 +33,5 @@ convert_parser.add_argument('filename', type=str)
 convert_parser.add_argument('--format', type=str, default='png')
 convert_parser.set_defaults(func=convert)
 
-args = parser.parse_args(sys.argv[1:])
+args = parser.parse_args()
 args.func(args)
