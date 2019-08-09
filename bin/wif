@@ -1,37 +1,59 @@
 #!/usr/bin/env python
 
 from wif.io import *
+import contextlib
 import argparse
 import sys
 import re
 
 
-def studio_convert(args):
-    for block in read_blocks(sys.stdin):
-        image = block_to_image(block)
-        image.save(sys.stdout.buffer, format=args.format)
+@contextlib.contextmanager
+def open_stdin():
+    yield sys.stdin
 
 
-def convert(args):
+@contextlib.contextmanager
+def open_file(filename):
+    with open(filename) as file:
+        yield file
+
+
+def open_input_stream(filename):
+    if filename == 'STDIN':
+        return open_stdin()
+    else:
+        return open_file(filename)
+
+
+@contextlib.contextmanager
+def open_output_stream(filename):
+    if filename == 'STDOUT':
+        yield sys.stdout.buffer
+    else:
+        with open(filename, 'wb') as file:
+            yield file
+
+
+def extract(args):
     def filename(index):
-        return re.sub('%d', str(index).rjust(5, '0'), args.filename)
+        return re.sub('%d', str(index).rjust(5, '0'), args.output)
 
-    for index, block in enumerate(read_blocks(sys.stdin)):
-        image = block_to_image(block)
-        image.save(filename(index), format=args.format)
+    with open_input_stream(args.input) as stream:
+        for index, block in enumerate(read_blocks(stream)):
+            image = block_to_image(block)
+
+            with open_output_stream(filename(index)) as out:
+                image.save(out, format=args.format)
 
 
 parser = argparse.ArgumentParser(prog='wif')
 subparsers = parser.add_subparsers(help='sub-command help')
 
-studio_parser = subparsers.add_parser('studio-convert', help='converts stdin (from raytracer) to series of pngs on stdout')
+studio_parser = subparsers.add_parser('extract', help='extract frames from the wif into separate files')
 studio_parser.add_argument('--format', type=str, default='png')
-studio_parser.set_defaults(func=studio_convert)
-
-convert_parser = subparsers.add_parser('convert', help='converts stdin (from raytracer) to png files')
-convert_parser.add_argument('filename', type=str)
-convert_parser.add_argument('--format', type=str, default='png')
-convert_parser.set_defaults(func=convert)
+studio_parser.add_argument('-i', '--input', type=str, default='STDIN')
+studio_parser.add_argument('-o', '--output', type=str, default='frame%d.png')
+studio_parser.set_defaults(func=extract)
 
 args = parser.parse_args()
 args.func(args)
