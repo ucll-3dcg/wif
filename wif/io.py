@@ -62,4 +62,4 @@ def read_frames(stream):
     for block in read_blocks(stream):
         image = block_to_image(block)
         image.save(sys.stdout.buffer, format=args.format)
-
+        image.close()
