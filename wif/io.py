@@ -42,7 +42,7 @@ def read_blocks(stream, block_size = 5000000):
 
 def block_to_image(block):
     '''
-    Takes a block of data, base64-decodes it and turns it into an image.
+    Takes a block of data and turns it into an image.
     '''
     # Read two little endian 32 bit integers
     width, height = struct.unpack('<2I', block[:8])
