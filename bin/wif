@@ -60,6 +60,7 @@ def gui(args):
 
 
 parser = argparse.ArgumentParser(prog='wif')
+parser.set_defaults(func=lambda args: parser.print_help())
 subparsers = parser.add_subparsers(help='sub-command help')
 
 subparser = subparsers.add_parser('extract', help='extract frames from the wif into separate files')
