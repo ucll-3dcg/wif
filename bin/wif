@@ -8,6 +8,8 @@ import tkinter as tk
 from PIL import ImageTk
 import sys
 import re
+import cv2
+import numpy
 
 
 @contextlib.contextmanager
@@ -59,6 +61,15 @@ def gui(args):
         Application(frames).mainloop()
 
 
+def convert(args):
+    writer = cv2.VideoWriter(args.output,cv2.VideoWriter_fourcc(*'DIVX'), 30, (500, 500))
+    for index, pil_image in enumerate(read_frames(sys.stdin)):
+        converted = cv2.cvtColor(numpy.array(pil_image), cv2.COLOR_RGB2BGR)
+        writer.write(converted)
+    writer.release()
+
+
+
 parser = argparse.ArgumentParser(prog='wif')
 parser.set_defaults(func=lambda args: parser.print_help())
 subparsers = parser.add_subparsers(help='sub-command help')
@@ -76,6 +87,10 @@ subparser.set_defaults(func=info)
 subparser = subparsers.add_parser('gui', help='opens GUI')
 subparser.add_argument('-i', '--input', type=str, default='STDIN')
 subparser.set_defaults(func=gui)
+
+subparser = subparsers.add_parser('convert', help='opens GUI')
+subparser.add_argument('output', type=str)
+subparser.set_defaults(func=convert)
 
 args = parser.parse_args()
 args.func(args)
