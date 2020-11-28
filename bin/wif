@@ -90,7 +90,7 @@ subparser = subparsers.add_parser('gui', help='opens GUI')
 subparser.add_argument('-i', '--input', type=str, default='STDIN')
 subparser.set_defaults(func=gui)
 
-subparser = subparsers.add_parser('convert', help='opens GUI')
+subparser = subparsers.add_parser('convert', help='converts from STDIN to MP4')
 subparser.add_argument('output', type=str)
 subparser.set_defaults(func=convert)
 
