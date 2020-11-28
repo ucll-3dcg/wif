@@ -13,7 +13,7 @@ import re
 @contextlib.contextmanager
 def open_input_stream(filename):
     if filename == 'STDIN':
-        yield sys.stdin()
+        yield sys.stdin
     else:
         with open(filename) as file:
             yield file
