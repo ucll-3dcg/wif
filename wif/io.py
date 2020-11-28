@@ -40,15 +40,15 @@ def read_blocks(stream, block_size = 5000000):
             match = re.match(regex, buffer, re.MULTILINE | re.DOTALL)
 
 
-def block_to_image(block):
+def frame_to_image(frame):
     '''
-    Takes a block of data and turns it into an image.
+    Takes frame data and turns it into an image.
     '''
     # Read two little endian 32 bit integers
-    width, height = struct.unpack('<2I', block[:8])
+    width, height = struct.unpack('<2I', frame[:8])
 
     # Read groups of 3 unsigned chars
-    pixels = list(struct.iter_unpack("3B", block[8:]))
+    pixels = list(struct.iter_unpack("3B", frame[8:]))
 
     # Create image
     image = Image.new('RGB', (width, height))
@@ -69,6 +69,6 @@ def block_to_image(block):
 def read_frames(stream):
     count = 0
     for block in read_blocks(stream):
-        yield block_to_image(block)
+        yield frame_to_image(block)
         count += 1
         print(f"Processed frame {count}")
