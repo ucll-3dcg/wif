@@ -71,28 +71,28 @@ def convert(args):
     writer.release()
 
 
+def main():
+    parser = argparse.ArgumentParser(prog='wif')
+    parser.set_defaults(func=lambda args: parser.print_help())
+    subparsers = parser.add_subparsers(help='sub-command help')
 
-parser = argparse.ArgumentParser(prog='wif')
-parser.set_defaults(func=lambda args: parser.print_help())
-subparsers = parser.add_subparsers(help='sub-command help')
+    subparser = subparsers.add_parser('extract', help='extract frames from the wif into separate files')
+    subparser.add_argument('--format', type=str, default='png')
+    subparser.add_argument('-i', '--input', type=str, default='STDIN')
+    subparser.add_argument('-o', '--output', type=str, default='frame%d.png')
+    subparser.set_defaults(func=extract)
 
-subparser = subparsers.add_parser('extract', help='extract frames from the wif into separate files')
-subparser.add_argument('--format', type=str, default='png')
-subparser.add_argument('-i', '--input', type=str, default='STDIN')
-subparser.add_argument('-o', '--output', type=str, default='frame%d.png')
-subparser.set_defaults(func=extract)
+    subparser = subparsers.add_parser('info', help='prints information about the given WIF file')
+    subparser.add_argument('-i', '--input', type=str, default='STDIN')
+    subparser.set_defaults(func=info)
 
-subparser = subparsers.add_parser('info', help='prints information about the given WIF file')
-subparser.add_argument('-i', '--input', type=str, default='STDIN')
-subparser.set_defaults(func=info)
+    subparser = subparsers.add_parser('gui', help='opens GUI')
+    subparser.add_argument('-i', '--input', type=str, default='STDIN')
+    subparser.set_defaults(func=gui)
 
-subparser = subparsers.add_parser('gui', help='opens GUI')
-subparser.add_argument('-i', '--input', type=str, default='STDIN')
-subparser.set_defaults(func=gui)
+    subparser = subparsers.add_parser('convert', help='converts from STDIN to MP4')
+    subparser.add_argument('output', type=str)
+    subparser.set_defaults(func=convert)
 
-subparser = subparsers.add_parser('convert', help='converts from STDIN to MP4')
-subparser.add_argument('output', type=str)
-subparser.set_defaults(func=convert)
-
-args = parser.parse_args()
-args.func(args)
+    args = parser.parse_args()
+    args.func(args)

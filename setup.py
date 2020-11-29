@@ -8,6 +8,8 @@ setup(name='wif',
       author_email='frederic.vogels@ucll.be',
       license='MIT',
       packages=['wif'],
-      scripts=['bin/wif'],
-      install_requires=['pillow'],
+      entry_points = {
+            'console_scripts': [ 'wif=wif.main:main']
+      },
+      install_requires=['pillow', 'numpy', 'opencv-contrib-python'],
       zip_safe=False)
