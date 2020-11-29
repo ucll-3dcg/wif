@@ -65,7 +65,7 @@ def convert(args):
     writer = None
     for index, pil_image in enumerate(read_frames(sys.stdin)):
         if not writer:
-            writer = cv2.VideoWriter(args.output, cv2.VideoWriter_fourcc(*'mp4v'), 30, pil_image.size)
+            writer = cv2.VideoWriter(args.output, cv2.VideoWriter_fourcc(*'H264'), 30, pil_image.size)
         converted = cv2.cvtColor(numpy.array(pil_image), cv2.COLOR_RGB2BGR)
         writer.write(converted)
     writer.release()
