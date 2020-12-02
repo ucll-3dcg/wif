@@ -76,7 +76,7 @@ def main():
     parser.set_defaults(func=lambda args: parser.print_help())
     subparsers = parser.add_subparsers(help='sub-command help')
 
-    subparser = subparsers.add_parser('extract', help='extract frames from the wif into separate files')
+    subparser = subparsers.add_parser('frames', help='extract frames from the wif into separate files')
     subparser.add_argument('--format', type=str, default='png')
     subparser.add_argument('-i', '--input', type=str, default='STDIN')
     subparser.add_argument('-o', '--output', type=str, default='frame%d.png')
@@ -90,7 +90,7 @@ def main():
     subparser.add_argument('-i', '--input', type=str, default='STDIN')
     subparser.set_defaults(func=gui)
 
-    subparser = subparsers.add_parser('convert', help='converts from STDIN to MP4')
+    subparser = subparsers.add_parser('movie', help='converts from STDIN to movie')
     subparser.add_argument('output', type=str)
     subparser.set_defaults(func=convert)
 
