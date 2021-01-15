@@ -2,6 +2,7 @@
 
 from wif.io import *
 from wif.gui import Application
+from wif.version import __version__
 import contextlib
 import argparse
 import tkinter as tk
@@ -72,9 +73,11 @@ def convert(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog='wif')
+    parser = argparse.ArgumentParser()
     parser.set_defaults(func=lambda args: parser.print_help())
     subparsers = parser.add_subparsers(help='sub-command help')
+
+    parser.add_argument('--version', action='version', version=__version__)
 
     subparser = subparsers.add_parser('frames', help='extract frames from the wif into separate files')
     subparser.add_argument('--format', type=str, default='png')
