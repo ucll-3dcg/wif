@@ -86,11 +86,11 @@ def main():
     subparser.set_defaults(func=extract)
 
     subparser = subparsers.add_parser('info', help='prints information about the given WIF file')
-    subparser.add_argument('-i', '--input', type=str, default='STDIN')
+    subparser.add_argument('input', type=str, default='STDIN')
     subparser.set_defaults(func=info)
 
     subparser = subparsers.add_parser('gui', help='opens GUI')
-    subparser.add_argument('-i', '--input', type=str, default='STDIN')
+    subparser.add_argument('input', type=str, default='STDIN')
     subparser.set_defaults(func=gui)
 
     subparser = subparsers.add_parser('movie', help='converts from STDIN to movie')
