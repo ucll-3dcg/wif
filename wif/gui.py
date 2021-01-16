@@ -32,7 +32,7 @@ class Application(tk.Frame):
     def __create_widgets(self):
         slider = tk.Scale(self, variable=self.__index, from_=0, to=len(self.__images) - 1, orient=tk.HORIZONTAL)
         slider.pack()
-        animation_checkbox = tk.Checkbutton(self, variable=self.__animating)
+        animation_checkbox = tk.Checkbutton(self, text="Animate", variable=self.__animating)
         animation_checkbox.pack()
         self.__label = tk.Label(self)
         self.__label.pack()
