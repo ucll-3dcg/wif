@@ -7,7 +7,7 @@ class Application(tk.Frame):
         self.root = tk.Tk()
         super().__init__(self.root)
         self.__images = [ ImageTk.PhotoImage(frame) for frame in frames ]
-        self.__index = tk.IntVar(0)
+        self.__create_index()
         self.__create_animating()
         self.pack()
         self.__create_widgets()
@@ -19,6 +19,12 @@ class Application(tk.Frame):
                 self.__tick()
         self.__animating = tk.BooleanVar(value=True)
         self.__animating.trace_add('write', callback)
+
+    def __create_index(self):
+        def callback(var, idx, mode):
+            self.__update()
+        self.__index = tk.IntVar(0)
+        self.__index.trace_add('write', callback)
 
     def __create_widgets(self):
         slider = tk.Scale(self, variable=self.__index, from_=0, to=len(self.__images) - 1, orient=tk.HORIZONTAL)
@@ -36,7 +42,6 @@ class Application(tk.Frame):
 
     def __tick(self):
         self.__index.set((self.__index.get() + 1) % len(self.__images))
-        self.__update()
         if self.__animating.get():
             self.__schedule_tick()
 
