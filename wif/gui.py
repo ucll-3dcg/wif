@@ -7,22 +7,24 @@ class Application(tk.Frame):
         self.root = tk.Tk()
         super().__init__(self.root)
         self.__images = [ ImageTk.PhotoImage(frame) for frame in frames ]
-        self.__index = 0
+        self.__index = tk.IntVar(0)
         self.pack()
         self.__create_widgets()
         self.__tick()
 
     def __create_widgets(self):
+        self.__frame_slider = tk.Scale(self, variable=self.__index, from_=0, to=len(self.__images), orient=tk.HORIZONTAL)
+        self.__frame_slider.pack()
         self.__label = tk.Label(self)
         self.__label.pack()
         self.__update()
 
     def __update(self):
-        image = self.__images[self.__index]
+        image = self.__images[self.__index.get()]
         self.__label.configure(image=image)
         self.__label.image = image
 
     def __tick(self):
-        self.__index = (self.__index + 1) % len(self.__images)
+        self.__index.set((self.__index.get() + 1) % len(self.__images))
         self.__update()
         self.root.after(1000 // 30, self.__tick)
