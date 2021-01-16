@@ -10,7 +10,7 @@ from PIL import ImageTk
 import sys
 import re
 import cv2
-import numpy
+from itertools import islice
 
 
 @contextlib.contextmanager
@@ -58,8 +58,9 @@ def info(args):
 
 def gui(args):
     with open_input_stream(args.input) as stream:
-        frames = list(read_frames(stream))
-        Application(frames).mainloop()
+        frames = read_frames(stream)
+        selected_frames = list(islice(frames, args.first, args.last, args.step))
+        Application(selected_frames).mainloop()
 
 
 def convert(args):
@@ -91,6 +92,9 @@ def main():
 
     subparser = subparsers.add_parser('gui', help='opens GUI')
     subparser.add_argument('input', type=str, default='STDIN')
+    subparser.add_argument('--first', type=int, default=None)
+    subparser.add_argument('--last', type=int, default=None)
+    subparser.add_argument('--step', type=int, default=None)
     subparser.set_defaults(func=gui)
 
     subparser = subparsers.add_parser('movie', help='converts from STDIN to movie')
