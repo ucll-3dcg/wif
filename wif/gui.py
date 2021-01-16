@@ -27,7 +27,7 @@ class Application(tk.Frame):
     def __create_index_variable(self):
         def callback(var, idx, mode):
             self.__update()
-        self.__index = tk.IntVar(0)
+        self.__index = tk.IntVar(value=0)
         self.__index.trace_add('write', callback)
 
     def __create_fps_variable(self):
