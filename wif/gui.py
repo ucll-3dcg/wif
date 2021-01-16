@@ -7,20 +7,23 @@ class Application(tk.Frame):
         self.root = tk.Tk()
         super().__init__(self.root)
         self.__images = [ ImageTk.PhotoImage(frame) for frame in frames ]
-        self.__create_index()
-        self.__create_animating()
+        self.__create_variables()
         self.pack()
         self.__create_widgets()
         self.__tick()
 
-    def __create_animating(self):
+    def __create_variables(self):
+        self.__create_index_variable()
+        self.__create_animating_variable()
+
+    def __create_animating_variable(self):
         def callback(var, idx, mode):
             if self.__animating.get():
                 self.__tick()
         self.__animating = tk.BooleanVar(value=True)
         self.__animating.trace_add('write', callback)
 
-    def __create_index(self):
+    def __create_index_variable(self):
         def callback(var, idx, mode):
             self.__update()
         self.__index = tk.IntVar(0)
