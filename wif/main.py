@@ -6,7 +6,6 @@ from wif.version import __version__
 import contextlib
 import argparse
 import tkinter as tk
-from PIL import ImageTk
 import sys
 import re
 import cv2
