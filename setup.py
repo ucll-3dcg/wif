@@ -17,7 +17,7 @@ setup(
     name='wif',
     version=find_version(),
     description='WIF tools',
-    url='http://github.com/UCLeuvenLimburg/wif',
+    url='http://github.com/ucll-3dcg/wif',
     author='Frederic Vogels',
     author_email='frederic.vogels@ucll.be',
     license='MIT',
