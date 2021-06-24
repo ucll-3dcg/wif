@@ -75,7 +75,7 @@ def convert(args):
 def main():
     parser = argparse.ArgumentParser()
     parser.set_defaults(func=lambda args: parser.print_help())
-    subparsers = parser.add_subparsers(help='sub-command help')
+    subparsers = parser.add_subparsers()
 
     parser.add_argument('--version', action='version', version=__version__)
 
