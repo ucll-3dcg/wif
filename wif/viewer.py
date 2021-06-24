@@ -2,7 +2,7 @@ import tkinter as tk
 from PIL import ImageTk
 
 
-class Application(tk.Frame):
+class ViewerApplication(tk.Frame):
     def __init__(self, frames):
         self.root = tk.Tk()
         super().__init__(self.root)

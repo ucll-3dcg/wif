@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from wif.io import *
-from wif.gui import Application
+from wif.viewer import ViewerApplication
 from wif.version import __version__
 import contextlib
 import argparse
@@ -59,7 +59,7 @@ def gui(args):
     with open_input_stream(args.input) as stream:
         frames = read_frames(stream)
         selected_frames = list(islice(frames, args.first, args.last, args.step))
-        Application(selected_frames).mainloop()
+        ViewerApplication(selected_frames).mainloop()
 
 
 def convert(args):
