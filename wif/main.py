@@ -89,7 +89,7 @@ def main():
     subparser.add_argument('input', type=str, default='STDIN')
     subparser.set_defaults(func=info)
 
-    subparser = subparsers.add_parser('gui', help='opens GUI')
+    subparser = subparsers.add_parser('view', help='opens GUI')
     subparser.add_argument('input', type=str, default='STDIN')
     subparser.add_argument('--first', type=int, default=None)
     subparser.add_argument('--last', type=int, default=None)
