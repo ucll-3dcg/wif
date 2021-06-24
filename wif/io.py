@@ -9,9 +9,8 @@ def read_blocks(stream, block_size = 5000000):
     '''
     Finds blocks delimited by <<< >>>
     '''
-    regex = r'\s*<<<(.*?)>>>\s*(.*)'
+    regex = re.compile(r'\s*<<<(.*?)>>>\s*(.*)', re.MULTILINE | re.DOTALL)
     buffer = ''
-    count = 0
     end_reached = False
 
     while not end_reached:
@@ -23,7 +22,7 @@ def read_blocks(stream, block_size = 5000000):
 
         buffer += data
 
-        match = re.match(regex, buffer, re.MULTILINE | re.DOTALL)
+        match = re.match(regex, buffer)
 
         while match:
             block = match.group(1)
@@ -37,7 +36,7 @@ def read_blocks(stream, block_size = 5000000):
             else:
                 yield decoded
 
-            match = re.match(regex, buffer, re.MULTILINE | re.DOTALL)
+            match = re.match(regex, buffer)
 
 
 def frame_to_image(frame):
