@@ -1,11 +1,14 @@
+import asyncio
 import base64
 import struct
 from PIL import Image
 import sys
 import re
+import threading
+from queue import Queue
 
 
-def read_blocks(stream, block_size = 5000000):
+def read_blocks(stream, block_size=5000000):
     '''
     Finds blocks delimited by <<< >>>
     '''
@@ -66,8 +69,39 @@ def frame_to_image(frame):
 
 
 def read_frames(stream):
-    count = 0
     for block in read_blocks(stream):
         yield frame_to_image(block)
-        count += 1
-        print(f"Processed frame {count}", flush=True)
+
+
+def _thread_entry_point(loop):
+    try:
+        loop.run_forever()
+    finally:
+        loop.run_until_complete(loop.shutdown_asyncgens())
+        loop.close()
+
+
+_loop = None
+
+
+def init():
+    global _loop
+    _loop = asyncio.new_event_loop()
+    worker_thread = threading.Thread(target=_thread_entry_point, args=(_loop,))
+    worker_thread.start()
+
+
+def exit():
+    global _loop
+    _loop.call_soon_threadsafe(_loop.stop)
+
+
+def read_frames_in_background(stream):
+    queue = Queue()
+
+    def read():
+        for frame in read_frames(stream):
+            queue.put(frame)
+
+    _loop.call_soon_threadsafe(read)
+    return queue

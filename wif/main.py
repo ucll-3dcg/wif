@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-from wif.io import *
+from wif.io import read_frames, read_frames_in_background, init, exit
 from wif.viewer import ViewerApplication
+from wif.gui import StudioApplication
 from wif.version import __version__
 import contextlib
 import argparse
@@ -9,6 +10,7 @@ import tkinter as tk
 import sys
 import re
 import cv2
+import numpy
 from itertools import islice
 
 
@@ -55,18 +57,24 @@ def info(args):
                 print(f"Frame {index} has size {size[0]}x{size[1]}")
 
 
-def gui(args):
+def viewer(args):
+    init()
     with open_input_stream(args.input) as stream:
-        frames = read_frames(stream)
-        selected_frames = list(islice(frames, args.first, args.last, args.step))
-        ViewerApplication(selected_frames).mainloop()
+        queue = read_frames_in_background(stream)
+        ViewerApplication(queue).mainloop()
+    exit()
+
+
+def gui(args):
+    StudioApplication().mainloop()
 
 
 def convert(args):
     writer = None
     for index, pil_image in enumerate(read_frames(sys.stdin)):
         if not writer:
-            writer = cv2.VideoWriter(args.output, cv2.VideoWriter_fourcc(*'avc1'), 30, pil_image.size)
+            codec = cv2.VideoWriter_fourcc(*'avc1')
+            writer = cv2.VideoWriter(args.output, codec, 30, pil_image.size)
         converted = cv2.cvtColor(numpy.array(pil_image), cv2.COLOR_RGB2BGR)
         writer.write(converted)
     writer.release()
@@ -89,11 +97,11 @@ def main():
     subparser.add_argument('input', type=str, default='STDIN')
     subparser.set_defaults(func=info)
 
-    subparser = subparsers.add_parser('view', help='opens GUI')
+    subparser = subparsers.add_parser('view', help='opens viewer')
     subparser.add_argument('input', type=str, default='STDIN')
-    subparser.add_argument('--first', type=int, default=None)
-    subparser.add_argument('--last', type=int, default=None)
-    subparser.add_argument('--step', type=int, default=None)
+    subparser.set_defaults(func=viewer)
+
+    subparser = subparsers.add_parser('gui', help='opens GUI')
     subparser.set_defaults(func=gui)
 
     subparser = subparsers.add_parser('movie', help='converts from STDIN to movie')
