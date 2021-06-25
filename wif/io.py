@@ -1,4 +1,5 @@
 import asyncio
+import aiofile
 import base64
 import struct
 from PIL import Image
@@ -8,23 +9,31 @@ import threading
 from queue import Queue
 
 
-def read_blocks(stream, block_size=5000000):
+async def read_blocks(path, block_size):
+    if path == 'STDIN':
+        while True:
+            block = sys.stdin.read(block_size)
+            if not block:
+                break
+            yield block
+    else:
+        async with aiofile.async_open(path, 'r') as stream:
+            while True:
+                block = await stream.read(block_size)
+                if not block:
+                    break
+                yield block
+
+
+async def read_frames(blocks):
     '''
     Finds blocks delimited by <<< >>>
     '''
     regex = re.compile(r'\s*<<<(.*?)>>>\s*(.*)', re.MULTILINE | re.DOTALL)
     buffer = ''
-    end_reached = False
 
-    while not end_reached:
-        data = stream.read(block_size)
-
-        if not data:
-            print("Unexpected EOF")
-            sys.exit(-1)
-
-        buffer += data
-
+    async for block in blocks:
+        buffer += block
         match = re.match(regex, buffer)
 
         while match:
@@ -35,14 +44,14 @@ def read_blocks(stream, block_size=5000000):
             decoded = base64.b64decode(block)
 
             if len(decoded) == 4:
-                end_reached = True
+                break
             else:
                 yield decoded
 
             match = re.match(regex, buffer)
 
 
-def frame_to_image(frame):
+async def frame_to_image(frame):
     '''
     Takes frame data and turns it into an image.
     '''
@@ -68,9 +77,10 @@ def frame_to_image(frame):
     return image
 
 
-def read_frames(stream):
-    for block in read_blocks(stream):
-        yield frame_to_image(block)
+async def read_images(blocks):
+    async for frame in read_frames(blocks):
+        image = await frame_to_image(frame)
+        yield image
 
 
 def _thread_entry_point(loop):
@@ -96,12 +106,12 @@ def exit():
     _loop.call_soon_threadsafe(_loop.stop)
 
 
-def read_frames_in_background(stream):
+def read_images_in_background(blocks):
     queue = Queue()
 
-    def read():
-        for frame in read_frames(stream):
-            queue.put(frame)
+    async def read():
+        async for image in read_images(blocks):
+            queue.put(image)
 
-    _loop.call_soon_threadsafe(read)
+    _loop.create_task(read())
     return queue

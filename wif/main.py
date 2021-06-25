@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-from wif.io import read_frames, read_frames_in_background
+import asyncio
+import aiofile
+from wif.io import read_images, read_images_in_background, read_blocks
 import wif.io
 from wif.viewer import ViewerApplication
 from wif.gui import StudioApplication
@@ -14,14 +16,6 @@ import cv2
 import numpy
 from itertools import islice
 
-
-@contextlib.contextmanager
-def open_input_stream(filename):
-    if filename == 'STDIN':
-        yield sys.stdin
-    else:
-        with open(filename) as file:
-            yield file
 
 
 @contextlib.contextmanager
@@ -43,27 +37,27 @@ def extract(args):
                 image.save(out, format=args.format)
 
 
-def info(args):
-    with open_input_stream(args.input) as stream:
-        sizes = []
-        for index, image in enumerate(read_frames(stream)):
-            sizes.append((image.width, image.height))
-            image.close()
-        if len(set(sizes)) == 1:
-            width = sizes[0][0]
-            height = sizes[0][1]
-            print(f"{len(sizes)} frames, each has size {width}x{height}")
-        else:
-            for index, size in enumerate(sizes):
-                print(f"Frame {index} has size {size[0]}x{size[1]}")
+async def info(args):
+    blocks = read_blocks(args.input, 500000)
+    sizes = []
+    async for image in read_images(blocks):
+        sizes.append((image.width, image.height))
+        image.close()
+    if len(set(sizes)) == 1:
+        width = sizes[0][0]
+        height = sizes[0][1]
+        print(f"{len(sizes)} frames, each has size {width}x{height}")
+    else:
+        for index, size in enumerate(sizes):
+            print(f"Frame {index} has size {size[0]}x{size[1]}")
 
 
-def viewer(args):
+async def viewer(args):
     root = tk.Tk()
     wif.io.init()
-    with open_input_stream(args.input) as stream:
-        queue = read_frames_in_background(stream)
-        ViewerApplication(root, queue).mainloop()
+    blocks = read_blocks(args.input, 500000)
+    queue = read_images_in_background(blocks)
+    ViewerApplication(root, queue).mainloop()
     wif.io.exit()
 
 
@@ -98,7 +92,7 @@ def main():
     subparser.set_defaults(func=extract)
 
     subparser = subparsers.add_parser('info', help='prints information about the given WIF file')
-    subparser.add_argument('input', type=str, default='STDIN')
+    subparser.add_argument('input', type=str, default='STDIN', nargs='?')
     subparser.set_defaults(func=info)
 
     subparser = subparsers.add_parser('view', help='opens viewer')
@@ -113,4 +107,4 @@ def main():
     subparser.set_defaults(func=convert)
 
     args = parser.parse_args()
-    args.func(args)
+    asyncio.run(args.func(args))

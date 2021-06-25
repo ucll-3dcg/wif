@@ -58,6 +58,10 @@ class StudioApplication(tk.Frame):
             contents = file.read()
             self.__add_editor_tab(file.name, contents)
 
+    @property
+    def __selected_tab_index(self):
+        return self.__notebook.index(self.__notebook.select())
+
 
 class ViewerWindow(tk.Toplevel):
     def __init__(self, parent, queue):
