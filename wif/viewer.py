@@ -3,16 +3,15 @@ from PIL import ImageTk
 
 
 class ViewerApplication(tk.Frame):
-    def __init__(self, queue):
-        self.root = tk.Tk()
-        super().__init__(self.root)
-        # self.__images = [ ImageTk.PhotoImage(frame) for frame in frames ]
+    def __init__(self, parent, queue):
+        super().__init__(parent)
         self.__queue = queue
         self.__images = []
         self.__create_variables()
         self.pack()
         self.__create_widgets()
         self.__tick()
+        self.__fetch_images_from_queue()
 
     def __fetch_images_from_queue(self):
         if not self.__queue.empty():
@@ -20,6 +19,7 @@ class ViewerApplication(tk.Frame):
                 image = self.__queue.get()
                 self.__images.append(ImageTk.PhotoImage(image))
             self.__frame_slider.configure(to=len(self.__images) - 1)
+        self.after(100, self.__fetch_images_from_queue)
 
     def __create_variables(self):
         self.__create_index_variable()
@@ -62,9 +62,8 @@ class ViewerApplication(tk.Frame):
     def __tick(self):
         if self.__images:
             self.__index.set((self.__index.get() + 1) % len(self.__images))
-        # if self.__animating.get():
-        self.__schedule_tick()
+        if self.__animating.get():
+            self.__schedule_tick()
 
     def __schedule_tick(self):
-        self.__fetch_images_from_queue()
-        self.root.after(1000 // self.__fps.get(), self.__tick)
+        self.after(1000 // self.__fps.get(), self.__tick)

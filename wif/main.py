@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from wif.io import read_frames, read_frames_in_background, init, exit
+from wif.io import read_frames, read_frames_in_background
+import wif.io
 from wif.viewer import ViewerApplication
 from wif.gui import StudioApplication
 from wif.version import __version__
@@ -58,15 +59,18 @@ def info(args):
 
 
 def viewer(args):
-    init()
+    root = tk.Tk()
+    wif.io.init()
     with open_input_stream(args.input) as stream:
         queue = read_frames_in_background(stream)
-        ViewerApplication(queue).mainloop()
-    exit()
+        ViewerApplication(root, queue).mainloop()
+    wif.io.exit()
 
 
 def gui(args):
+    wif.io.init()
     StudioApplication().mainloop()
+    wif.io.exit()
 
 
 def convert(args):
