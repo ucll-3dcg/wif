@@ -33,11 +33,16 @@ class StudioApplication(tk.Frame):
         self.__notebook.pack(fill=tk.BOTH, expand=True)
 
     def __new_script(self):
+        self.__add_editor_tab(None, '')
+
+    def __add_editor_tab(self, filename, contents):
         frame = tk.Frame(self.__notebook)
         frame.pack(fill=tk.BOTH, expand=True)
         editor = tk.Text(frame)
         editor.pack(fill=tk.BOTH, expand=True)
-        self.__notebook.add(frame, text="untitled")
+        editor.insert('1.0', contents)
+        tab_title = filename if filename else 'untitled'
+        self.__notebook.add(frame, text=tab_title)
 
     def __open_file(self):
         filetypes = [
@@ -46,8 +51,12 @@ class StudioApplication(tk.Frame):
             ('All files', '*.*'),
         ]
         file = filedialog.askopenfile(filetypes=filetypes)
-        queue = wif.io.read_frames_in_background(file)
-        ViewerWindow(self, queue)
+        if file.name.endswith('.wif'):
+            queue = wif.io.read_frames_in_background(file)
+            ViewerWindow(self, queue)
+        elif file.name.endswith('.chai'):
+            contents = file.read()
+            self.__add_editor_tab(file.name, contents)
 
 
 class ViewerWindow(tk.Toplevel):
