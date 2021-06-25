@@ -46,8 +46,8 @@ class StudioApplication(tk.Frame):
 
     def __open_file(self):
         filetypes = [
-            ('WIF files', '*.wif'),
             ('Scripts', '*.chai'),
+            ('WIF files', '*.wif'),
             ('All files', '*.*'),
         ]
         file = filedialog.askopenfile(filetypes=filetypes)
