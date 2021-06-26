@@ -44,18 +44,23 @@ class StudioApplication(tk.Frame):
         tab_title = filename if filename else 'untitled'
         self.__notebook.add(frame, text=tab_title)
 
+    def __open_wif_viewer(self, path):
+        blocks = wif.io.read_blocks(path, 500000)
+        queue = wif.io.read_images_in_background(blocks)
+        ViewerWindow(self, queue)
+
     def __open_file(self):
         filetypes = [
             ('Scripts', '*.chai'),
             ('WIF files', '*.wif'),
             ('All files', '*.*'),
         ]
-        file = filedialog.askopenfile(filetypes=filetypes)
-        if file.name.endswith('.wif'):
-            queue = wif.io.read_frames_in_background(file)
-            ViewerWindow(self, queue)
-        elif file.name.endswith('.chai'):
-            contents = file.read()
+        filename = filedialog.askopenfilename(filetypes=filetypes)
+        if filename.endswith('.wif'):
+            self.__open_wif_viewer(filename)
+        elif filename.endswith('.chai'):
+            with open(filename) as file:
+                contents = file.read()
             self.__add_editor_tab(file.name, contents)
 
     @property

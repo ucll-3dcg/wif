@@ -113,5 +113,5 @@ def read_images_in_background(blocks):
         async for image in read_images(blocks):
             queue.put(image)
 
-    _loop.create_task(read())
+    _loop.call_soon_threadsafe(lambda: _loop.create_task(read()))
     return queue

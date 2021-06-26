@@ -55,16 +55,20 @@ async def info(args):
 async def viewer(args):
     root = tk.Tk()
     wif.io.init()
-    blocks = read_blocks(args.input, 500000)
-    queue = read_images_in_background(blocks)
-    ViewerApplication(root, queue).mainloop()
-    wif.io.exit()
+    try:
+        blocks = read_blocks(args.input, 500000)
+        queue = read_images_in_background(blocks)
+        ViewerApplication(root, queue).mainloop()
+    finally:
+        wif.io.exit()
 
 
-def gui(args):
+async def gui(args):
     wif.io.init()
-    StudioApplication().mainloop()
-    wif.io.exit()
+    try:
+        StudioApplication().mainloop()
+    finally:
+        wif.io.exit()
 
 
 def convert(args):
