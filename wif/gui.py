@@ -46,8 +46,7 @@ class StudioApplication(tk.Frame):
 
     def __open_wif_viewer(self, path):
         blocks = wif.io.read_blocks(path, 500000)
-        queue = wif.io.read_images_in_background(blocks)
-        ViewerWindow(self, queue)
+        ViewerWindow(self, blocks)
 
     def __open_file(self):
         filetypes = [

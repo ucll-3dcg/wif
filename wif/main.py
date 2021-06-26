@@ -4,6 +4,7 @@ import asyncio
 import aiofile
 from wif.io import read_images, read_images_in_background, read_blocks
 import wif.io
+import wif.bgworker
 from wif.viewer import ViewerApplication
 from wif.gui import StudioApplication
 from wif.version import __version__
@@ -54,21 +55,12 @@ async def info(args):
 
 async def viewer(args):
     root = tk.Tk()
-    wif.io.init()
-    try:
-        blocks = read_blocks(args.input, 500000)
-        queue = read_images_in_background(blocks)
-        ViewerApplication(root, queue).mainloop()
-    finally:
-        wif.io.exit()
+    blocks = read_blocks(args.input, 500000)
+    ViewerApplication(root, blocks).mainloop()
 
 
 async def gui(args):
-    wif.io.init()
-    try:
-        StudioApplication().mainloop()
-    finally:
-        wif.io.exit()
+    StudioApplication().mainloop()
 
 
 def convert(args):
@@ -111,4 +103,9 @@ def main():
     subparser.set_defaults(func=convert)
 
     args = parser.parse_args()
-    asyncio.run(args.func(args))
+
+    wif.bgworker.init()
+    try:
+        asyncio.run(args.func(args))
+    finally:
+        wif.bgworker.exit()

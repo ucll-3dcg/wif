@@ -5,8 +5,8 @@ import struct
 from PIL import Image
 import sys
 import re
-import threading
 from queue import Queue
+import wif.bgworker as bgworker
 
 
 async def read_blocks(path, block_size):
@@ -37,11 +37,11 @@ async def read_frames(blocks):
         match = re.match(regex, buffer)
 
         while match:
-            block = match.group(1)
+            frame = match.group(1)
             buffer = match.group(2)
 
             # Decode base64
-            decoded = base64.b64decode(block)
+            decoded = await _base64_decode(frame)
 
             if len(decoded) == 4:
                 break
@@ -49,6 +49,10 @@ async def read_frames(blocks):
                 yield decoded
 
             match = re.match(regex, buffer)
+
+
+async def _base64_decode(block):
+    return base64.b64decode(block)
 
 
 async def frame_to_image(frame):
@@ -83,29 +87,6 @@ async def read_images(blocks):
         yield image
 
 
-def _thread_entry_point(loop):
-    try:
-        loop.run_forever()
-    finally:
-        loop.run_until_complete(loop.shutdown_asyncgens())
-        loop.close()
-
-
-_loop = None
-
-
-def init():
-    global _loop
-    _loop = asyncio.new_event_loop()
-    worker_thread = threading.Thread(target=_thread_entry_point, args=(_loop,))
-    worker_thread.start()
-
-
-def exit():
-    global _loop
-    _loop.call_soon_threadsafe(_loop.stop)
-
-
 def read_images_in_background(blocks):
     queue = Queue()
 
@@ -113,5 +94,6 @@ def read_images_in_background(blocks):
         async for image in read_images(blocks):
             queue.put(image)
 
-    _loop.call_soon_threadsafe(lambda: _loop.create_task(read()))
+    bgworker.perform_async(read())
+
     return queue

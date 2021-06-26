@@ -1,25 +1,46 @@
 import tkinter as tk
 from PIL import ImageTk
-
+from queue import Queue
+from wif.io import read_images
+import wif.bgworker as bgworker
 
 class ViewerApplication(tk.Frame):
-    def __init__(self, parent, queue):
+    def __init__(self, parent, blocks):
         super().__init__(parent)
-        self.__queue = queue
         self.__images = []
         self.__create_variables()
         self.pack()
         self.__create_widgets()
         self.__tick()
-        self.__fetch_images_from_queue()
+        self.__read_images_in_background(blocks)
 
-    def __fetch_images_from_queue(self):
-        if not self.__queue.empty():
-            while not self.__queue.empty():
-                image = self.__queue.get()
-                self.__images.append(ImageTk.PhotoImage(image))
-            self.__frame_slider.configure(to=len(self.__images) - 1)
-        self.after(100, self.__fetch_images_from_queue)
+    def __read_images_in_background(self, blocks):
+        queue = Queue()
+
+        async def read():
+            async for image in read_images(blocks):
+                queue.put(ImageTk.PhotoImage(image))
+            queue.put(None)
+
+        bgworker.perform_async(read())
+
+        def fetch_images_from_queue():
+            nonlocal queue
+            finished = False
+
+            if not queue.empty():
+                while not queue.empty():
+                    image = queue.get()
+                    if not image:
+                        finished = True
+                    else:
+                        self.__images.append(image)
+                self.__frame_slider.configure(to=len(self.__images) - 1)
+
+            if not finished:
+                self.after(100, fetch_images_from_queue)
+
+        fetch_images_from_queue()
 
     def __create_variables(self):
         self.__create_index_variable()
