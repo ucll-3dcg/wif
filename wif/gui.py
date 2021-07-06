@@ -29,7 +29,12 @@ class StudioApplication(tk.Frame):
         self.root.bind('<Control-n>', lambda event: self.__new_script())
         file_menu.add_command(label="Open file", underline=0, command=self.__open_file, accelerator="Ctrl+O")
         self.root.bind('<Control-o>', lambda event: self.__open_file())
+        file_menu.add_command(label="Render", underline=0, command=self.__render_script, accelerator="F5")
+        self.root.bind('<F5>', lambda event: self.__render_script())
         menubar.add_cascade(menu=file_menu, label="File", underline=0)
+
+    def __render_script(self):
+        print("Rendering!")
 
     def __create_notebook(self):
         self.__notebook = ttk.Notebook(self.master)
