@@ -20,13 +20,16 @@ class StudioApplication(tk.Frame):
 
     def __create_menu(self):
         menubar = tk.Menu(self.master)
+        self.__create_file_menu(menubar)
+        self.master.config(menu=menubar)
+
+    def __create_file_menu(self, menubar):
         file_menu = tk.Menu(menubar, tearoff=False)
         file_menu.add_command(label="New script", underline=0, command=self.__new_script, accelerator="Ctrl+N")
         self.root.bind('<Control-n>', lambda event: self.__new_script())
         file_menu.add_command(label="Open file", underline=0, command=self.__open_file, accelerator="Ctrl+O")
         self.root.bind('<Control-o>', lambda event: self.__open_file())
         menubar.add_cascade(menu=file_menu, label="File", underline=0)
-        self.master.config(menu=menubar)
 
     def __create_notebook(self):
         self.__notebook = ttk.Notebook(self.master)
