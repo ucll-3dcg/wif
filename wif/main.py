@@ -2,7 +2,7 @@
 
 import asyncio
 import aiofile
-from wif.io import read_images, read_images_in_background, read_blocks
+from wif.io import read_images, read_blocks
 import wif.io
 import wif.bgworker
 from wif.viewer import ViewerApplication
@@ -15,8 +15,6 @@ import sys
 import re
 import cv2
 import numpy
-from itertools import islice
-
 
 
 @contextlib.contextmanager
@@ -63,15 +61,19 @@ async def gui(args):
     StudioApplication().mainloop()
 
 
-def convert(args):
+async def convert(args):
     writer = None
-    for index, pil_image in enumerate(read_frames(sys.stdin)):
+    blocks = wif.io.read_blocks(sys.stdin, 500000)
+    images = wif.io.read_images(blocks)
+
+    async for image in images:
         if not writer:
             codec = cv2.VideoWriter_fourcc(*'avc1')
-            writer = cv2.VideoWriter(args.output, codec, 30, pil_image.size)
-        converted = cv2.cvtColor(numpy.array(pil_image), cv2.COLOR_RGB2BGR)
+            writer = cv2.VideoWriter(args.output, codec, 30, image.size)
+        converted = cv2.cvtColor(numpy.array(image), cv2.COLOR_RGB2BGR)
         writer.write(converted)
-    writer.release()
+    if writer:
+        writer.release()
 
 
 def main():

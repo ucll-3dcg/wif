@@ -5,24 +5,29 @@ import struct
 from PIL import Image
 import sys
 import re
-from queue import Queue
-import wif.bgworker as bgworker
 
 
-async def read_blocks(path, block_size):
-    if path == 'STDIN':
+async def read_blocks(source, block_size):
+    if source == 'STDIN':
         while True:
             block = sys.stdin.read(block_size)
             if not block:
                 break
             yield block
-    else:
+    elif type(source) == str:
+        path = source
         async with aiofile.async_open(path, 'r') as stream:
             while True:
                 block = await stream.read(block_size)
                 if not block:
                     break
                 yield block
+    else:
+        while True:
+            block = source.read(block_size)
+            if not block:
+                break
+            yield block
 
 
 async def read_frames(blocks):
@@ -85,15 +90,3 @@ async def read_images(blocks):
     async for frame in read_frames(blocks):
         image = await frame_to_image(frame)
         yield image
-
-
-def read_images_in_background(blocks):
-    queue = Queue()
-
-    async def read():
-        async for image in read_images(blocks):
-            queue.put(image)
-
-    bgworker.perform_async(read())
-
-    return queue
