@@ -27,16 +27,6 @@ def open_output_stream(filename):
             yield file
 
 
-def extract(args):
-    def filename(index):
-        return re.sub('%d', str(index).rjust(5, '0'), args.output)
-
-    with open_input_stream(args.input) as stream:
-        for index, image in enumerate(read_frames(stream)):
-            with open_output_stream(filename(index)) as out:
-                image.save(out, format=args.format)
-
-
 async def info(args):
     blocks = read_blocks(args.input, 500000)
     sizes = []
@@ -131,12 +121,6 @@ def _process_command_line_arguments():
     subparsers = parser.add_subparsers()
 
     parser.add_argument('--version', action='version', version=__version__)
-
-    subparser = subparsers.add_parser('frames', help='extract frames from the wif into separate files')
-    subparser.add_argument('--format', type=str, default='png')
-    subparser.add_argument('-i', '--input', type=str, default='STDIN')
-    subparser.add_argument('-o', '--output', type=str, default='frame%d.png')
-    subparser.set_defaults(func=extract)
 
     subparser = subparsers.add_parser('info', help='prints information about the given WIF file')
     subparser.add_argument('input', type=str, default='STDIN', nargs='?')
