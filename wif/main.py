@@ -80,19 +80,31 @@ async def convert(args):
 async def _render_to_wif(args):
     input = args.input
     output = args.output
+    quiet = args.quiet
 
     async def write_to_wif(stream):
         with open(output, 'wb') as file:
-            while True:
-                data = await stream.read()
-                if not data:
-                    break
-                file.write(data)
+            async for block in wif.io.read_blocks_from_async_stream(stream):
+                file.write(block)
 
-    async def process_stderr(stream):
+    async def write_to_mp4(stream):
+        blocks = wif.io.read_blocks_from_async_stream(stream)
+        images = wif.io.read_images(blocks)
+        writer = None
+        async for image in images:
+            if not writer:
+                codec = cv2.VideoWriter_fourcc(*'avc1')
+                writer = cv2.VideoWriter(output, codec, 30, image.size)
+            converted = cv2.cvtColor(numpy.array(image), cv2.COLOR_RGB2BGR)
+            writer.write(converted)
+        if writer:
+            writer.release()
+
+    async def print_messages(stream):
         while True:
             data = await stream.readline()
-            print(data.decode('ascii'), end='')
+            if not quiet:
+                print(data.decode('ascii'), end='')
             if not data:
                 break
 
@@ -102,10 +114,15 @@ async def _render_to_wif(args):
         with open(input) as file:
             script = file.read()
 
+    if output.endswith('.wif'):
+        stdout_receiver = write_to_wif
+    else:
+        stdout_receiver = write_to_mp4
+
     await wif.raytracer.render_script(
         script,
-        stdout_receiver=write_to_wif,
-        stderr_receiver=process_stderr)
+        stdout_receiver=stdout_receiver,
+        stderr_receiver=print_messages)
 
 
 def _process_command_line_arguments():
@@ -139,6 +156,7 @@ def _process_command_line_arguments():
     subparser = subparsers.add_parser('render', help='renders script and saves as wif')
     subparser.add_argument('input', type=str)
     subparser.add_argument('output', type=str)
+    subparser.add_argument('-q', '--quiet', action='store_true')
     subparser.set_defaults(func=_render_to_wif)
 
     subparser = subparsers.add_parser('test', help='test')

@@ -30,6 +30,14 @@ async def read_blocks(source, block_size):
             yield block
 
 
+async def read_blocks_from_async_stream(stream, block_size=500000):
+    while True:
+        data = await stream.read(block_size)
+        if not data:
+            break
+        yield data.decode('ascii')
+
+
 async def read_frames(blocks):
     '''
     Finds blocks delimited by <<< >>>
