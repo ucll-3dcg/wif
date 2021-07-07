@@ -5,7 +5,7 @@ from wif.io import read_images
 import wif.bgworker as bgworker
 
 
-class ViewerApplication(tk.Frame):
+class Viewer(tk.Frame):
     def __init__(self, parent, blocks):
         super().__init__(parent)
         self.__images = []

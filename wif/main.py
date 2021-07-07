@@ -5,9 +5,10 @@ import aiofile
 from wif.io import read_images, read_blocks
 import wif.io
 import wif.bgworker
-from wif.viewer import ViewerApplication
+from wif.viewer import Viewer
 from wif.gui import StudioApplication
 from wif.version import __version__
+import wif.raytracer
 import contextlib
 import argparse
 import tkinter as tk
@@ -54,7 +55,7 @@ async def info(args):
 async def viewer(args):
     root = tk.Tk()
     blocks = read_blocks(args.input, 500000)
-    ViewerApplication(root, blocks).mainloop()
+    Viewer(root, blocks).mainloop()
 
 
 async def gui(args):
@@ -76,7 +77,11 @@ async def convert(args):
         writer.release()
 
 
-def main():
+async def _render_to_wif(args):
+    pass
+
+
+def _process_command_line_arguments():
     parser = argparse.ArgumentParser()
     parser.set_defaults(func=lambda args: parser.print_help())
     subparsers = parser.add_subparsers()
@@ -100,9 +105,13 @@ def main():
     subparser = subparsers.add_parser('gui', help='opens GUI')
     subparser.set_defaults(func=gui)
 
-    subparser = subparsers.add_parser('movie', help='converts from STDIN to movie')
+    subparser = subparsers.add_parser('movie', help='converts from STDIN to mp4')
     subparser.add_argument('output', type=str)
     subparser.set_defaults(func=convert)
+
+    subparser = subparsers.add_parser('render', help='converts from STDIN to wif')
+    subparser.add_argument('output', type=str)
+    subparser.set_defaults(func=_render_to_wif)
 
     args = parser.parse_args()
 
@@ -111,3 +120,13 @@ def main():
         asyncio.run(args.func(args))
     finally:
         wif.bgworker.exit()
+
+
+
+def main():
+    _process_command_line_arguments()
+
+    # filename = 'g:/temp/zoom.chai'
+    # with open(filename) as file:
+    #     script = file.read()
+    # asyncio.run(wif.raytracer.render_script(script))

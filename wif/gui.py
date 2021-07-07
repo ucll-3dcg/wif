@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 import wif.io
-from wif.viewer import ViewerApplication
+from wif.viewer import Viewer
 
 
 class StudioApplication(tk.Frame):
@@ -78,5 +78,5 @@ class StudioApplication(tk.Frame):
 class ViewerWindow(tk.Toplevel):
     def __init__(self, parent, queue):
         super().__init__(parent)
-        self.viewer = ViewerApplication(self, queue)
+        self.viewer = Viewer(self, queue)
         self.viewer.pack(expand=True, fill=tk.BOTH)
