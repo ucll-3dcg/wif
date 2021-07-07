@@ -96,8 +96,11 @@ async def _render_to_wif(args):
             if not data:
                 break
 
-    with open(input) as file:
-        script = file.read()
+    if input == '-':
+        script = sys.stdin.read()
+    else:
+        with open(input) as file:
+            script = file.read()
 
     await wif.raytracer.render_script(script, process_stdout, process_stderr)
 
