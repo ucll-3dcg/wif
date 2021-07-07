@@ -4,6 +4,7 @@ from queue import Queue
 from wif.io import read_images
 import wif.bgworker as bgworker
 
+
 class ViewerApplication(tk.Frame):
     def __init__(self, parent, blocks):
         super().__init__(parent)
@@ -15,29 +16,21 @@ class ViewerApplication(tk.Frame):
         self.__read_images_in_background(blocks)
 
     def __read_images_in_background(self, blocks):
-        queue = Queue()
-
         async def read():
             async for image in read_images(blocks):
-                queue.put(ImageTk.PhotoImage(image))
-            queue.put(None)
+                yield ImageTk.PhotoImage(image)
 
-        bgworker.perform_async(read())
+        collector = bgworker.Collector(read())
 
         def fetch_images_from_queue():
-            nonlocal queue
-            finished = False
+            nonlocal collector
+            while collector.items_available:
+                image = collector.retrieve()
+                self.__images.append(image)
 
-            if not queue.empty():
-                while not queue.empty():
-                    image = queue.get()
-                    if not image:
-                        finished = True
-                    else:
-                        self.__images.append(image)
-                self.__frame_slider.configure(to=len(self.__images) - 1)
+            self.__frame_slider.configure(to=len(self.__images) - 1)
 
-            if not finished:
+            if not collector.finished:
                 self.after(100, fetch_images_from_queue)
 
         fetch_images_from_queue()
