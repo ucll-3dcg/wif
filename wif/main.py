@@ -78,7 +78,28 @@ async def convert(args):
 
 
 async def _render_to_wif(args):
-    pass
+    input = args.input
+    output = args.output
+
+    async def process_stdout(stream):
+        with open(output, 'wb') as file:
+            while True:
+                data = await stream.read()
+                if not data:
+                    break
+                file.write(data)
+
+    async def process_stderr(stream):
+        while True:
+            data = await stream.readline()
+            print(data.decode('ascii'), end='')
+            if not data:
+                break
+
+    with open(input) as file:
+        script = file.read()
+
+    await wif.raytracer.render_script(script, process_stdout, process_stderr)
 
 
 def _process_command_line_arguments():
@@ -109,9 +130,13 @@ def _process_command_line_arguments():
     subparser.add_argument('output', type=str)
     subparser.set_defaults(func=convert)
 
-    subparser = subparsers.add_parser('render', help='converts from STDIN to wif')
+    subparser = subparsers.add_parser('render', help='renders script and saves as wif')
+    subparser.add_argument('input', type=str)
     subparser.add_argument('output', type=str)
     subparser.set_defaults(func=_render_to_wif)
+
+    subparser = subparsers.add_parser('test', help='test')
+    subparser.set_defaults(func=_test)
 
     args = parser.parse_args()
 
@@ -122,11 +147,12 @@ def _process_command_line_arguments():
         wif.bgworker.exit()
 
 
+async def _test(args):
+    filename = 'g:/temp/zoom.chai'
+    with open(filename) as file:
+        script = file.read()
+    await wif.raytracer.render_script(script)
+
 
 def main():
     _process_command_line_arguments()
-
-    # filename = 'g:/temp/zoom.chai'
-    # with open(filename) as file:
-    #     script = file.read()
-    # asyncio.run(wif.raytracer.render_script(script))

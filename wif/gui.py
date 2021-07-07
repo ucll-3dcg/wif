@@ -62,7 +62,8 @@ class StudioApplication(tk.Frame):
             ('WIF files', '*.wif'),
             ('All files', '*.*'),
         ]
-        filename = filedialog.askopenfilename(filetypes=filetypes)
+        # filename = filedialog.askopenfilename(filetypes=filetypes)
+        filename = "../quick.wif"
         if filename.endswith('.wif'):
             self.__open_wif_viewer(filename)
         elif filename.endswith('.chai'):
@@ -76,7 +77,22 @@ class StudioApplication(tk.Frame):
 
 
 class ViewerWindow(tk.Toplevel):
-    def __init__(self, parent, queue):
+    def __init__(self, parent, blocks):
         super().__init__(parent)
-        self.viewer = Viewer(self, queue)
-        self.viewer.pack(expand=True, fill=tk.BOTH)
+        self.__notebook = ttk.Notebook(self)
+        self.__notebook.pack(fill=tk.BOTH, expand=True)
+
+        viewer_frame = tk.Frame(self.__notebook)
+        viewer_frame.pack(fill=tk.BOTH, expand=True)
+        viewer = Viewer(viewer_frame, blocks)
+        viewer.pack(fill=tk.BOTH, expand=True)
+        tab_title = 'messages'
+        self.__notebook.add(viewer_frame, text=tab_title)
+
+        message_frame = tk.Frame(self.__notebook)
+        message_frame.pack(fill=tk.BOTH, expand=True)
+        editor = tk.Text(message_frame)
+        editor.pack(fill=tk.BOTH, expand=True)
+        editor.insert('1.0', 'test')
+        tab_title = 'messages'
+        self.__notebook.add(message_frame, text=tab_title)
