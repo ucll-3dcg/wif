@@ -81,7 +81,7 @@ async def _render_to_wif(args):
     input = args.input
     output = args.output
 
-    async def process_stdout(stream):
+    async def write_to_wif(stream):
         with open(output, 'wb') as file:
             while True:
                 data = await stream.read()
@@ -102,7 +102,10 @@ async def _render_to_wif(args):
         with open(input) as file:
             script = file.read()
 
-    await wif.raytracer.render_script(script, process_stdout, process_stderr)
+    await wif.raytracer.render_script(
+        script,
+        stdout_receiver=write_to_wif,
+        stderr_receiver=process_stderr)
 
 
 def _process_command_line_arguments():
