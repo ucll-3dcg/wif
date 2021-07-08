@@ -3,7 +3,7 @@ import tkinter.scrolledtext
 from tkinter import filedialog
 from tkinter import ttk
 import wif.io
-from wif.viewer import Viewer, convert_images
+from wif.gui.viewer import Viewer, convert_images
 import wif.bgworker
 import wif.raytracer
 
