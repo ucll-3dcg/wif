@@ -52,7 +52,7 @@ class StudioApplication(tk.Frame):
         self.__notebook.add(frame, text=tab_title)
 
     def __open_wif_viewer(self, path):
-        blocks = wif.io.read_blocks(path, 500000)
+        blocks = wif.io.read_blocks_from_file(path, 500000)
         ViewerWindow(self, blocks)
 
     def __open_file(self):

@@ -6,18 +6,6 @@ import sys
 import re
 
 
-async def read_blocks(source, block_size=500000):
-    if source == 'STDIN':
-        async for block in read_blocks_from_stdin(block_size):
-            yield block
-    elif type(source) == str:
-        async for block in read_blocks_from_file(source, block_size):
-            yield block
-    else:
-        async for block in read_blocks_from_sync_stream(source, block_size):
-            yield block
-
-
 async def read_blocks_from_stdin(block_size=500000):
     while True:
         block = sys.stdin.read(block_size)

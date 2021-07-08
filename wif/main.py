@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import asyncio
-from wif.io import read_images, read_blocks
+from wif.io import read_blocks_from_file, read_blocks_from_stdin, read_images
 import wif.io
 import wif.bgworker
 import wif.viewer
@@ -27,7 +27,10 @@ def open_output_stream(filename):
 
 
 async def info(args):
-    blocks = read_blocks(args.input, 500000)
+    if args.input == '-':
+        blocks = read_blocks_from_stdin(500000)
+    else:
+        read_blocks_from_file(args.input, 500000)
     sizes = []
     async for image in read_images(blocks):
         sizes.append((image.width, image.height))
@@ -41,80 +44,8 @@ async def info(args):
             print(f"Frame {index} has size {size[0]}x{size[1]}")
 
 
-async def viewer(args):
-    root = tk.Tk()
-    blocks = read_blocks(args.input, 500000)
-    images = read_images(blocks)
-    gui_images = wif.viewer.convert_images(images)
-    collector = wif.bgworker.Collector(gui_images)
-    wif.viewer.Viewer(root, collector).mainloop()
-
-
 async def gui(args):
     StudioApplication().mainloop()
-
-
-async def _movie(args):
-    writer = None
-    blocks = wif.io.read_blocks(sys.stdin, 500000)
-    images = wif.io.read_images(blocks)
-
-    async for image in images:
-        if not writer:
-            codec = cv2.VideoWriter_fourcc(*'avc1')
-            writer = cv2.VideoWriter(args.output, codec, 30, image.size)
-        converted = cv2.cvtColor(numpy.array(image), cv2.COLOR_RGB2BGR)
-        writer.write(converted)
-    if writer:
-        writer.release()
-
-
-async def _render_to_wif(args):
-    input = args.input
-    output = args.output
-    quiet = args.quiet
-
-    async def write_to_wif(stream):
-        with open(output, 'wb') as file:
-            async for block in wif.io.read_blocks_from_async_stream(stream):
-                file.write(block)
-
-    async def write_to_mp4(stream):
-        blocks = wif.io.read_blocks_from_async_stream(stream)
-        images = wif.io.read_images(blocks)
-        writer = None
-        async for image in images:
-            if not writer:
-                codec = cv2.VideoWriter_fourcc(*'avc1')
-                writer = cv2.VideoWriter(output, codec, 30, image.size)
-            converted = cv2.cvtColor(numpy.array(image), cv2.COLOR_RGB2BGR)
-            writer.write(converted)
-        if writer:
-            writer.release()
-
-    async def print_messages(stream):
-        while True:
-            data = await stream.readline()
-            if not quiet:
-                print(data.decode('ascii'), end='')
-            if not data:
-                break
-
-    if input == '-':
-        script = sys.stdin.read()
-    else:
-        with open(input) as file:
-            script = file.read()
-
-    if output.endswith('.wif'):
-        stdout_receiver = write_to_wif
-    else:
-        stdout_receiver = write_to_mp4
-
-    await wif.raytracer.render_script(
-        script,
-        stdout_receiver=stdout_receiver,
-        stderr_receiver=print_messages)
 
 
 def _read_script(input):
@@ -188,14 +119,20 @@ async def _chai_to_gui(args):
 
 
 async def _wif_to_mp4(args):
-    blocks = wif.io.read_blocks(args.input)
+    if args.input == '-':
+        blocks = read_blocks_from_stdin()
+    else:
+        blocks = read_blocks_from_file(args.input)
     images = wif.io.read_images(blocks)
     await _create_mp4(images, args.output)
 
 
 async def _wif_to_gui(args):
     root = tk.Tk()
-    blocks = read_blocks(args.input, 500000)
+    if args.input == '-':
+        blocks = read_blocks_from_stdin()
+    else:
+        blocks = read_blocks_from_file(args.input)
     images = read_images(blocks)
     gui_images = wif.viewer.convert_images(images)
     collector = wif.bgworker.Collector(gui_images)
@@ -237,22 +174,8 @@ def _process_command_line_arguments():
     subparser.add_argument('input', type=str, default='STDIN', nargs='?')
     subparser.set_defaults(func=info)
 
-    subparser = subparsers.add_parser('view', help='opens viewer')
-    subparser.add_argument('input', type=str, default='STDIN')
-    subparser.set_defaults(func=viewer)
-
     subparser = subparsers.add_parser('gui', help='opens GUI')
     subparser.set_defaults(func=gui)
-
-    subparser = subparsers.add_parser('movie', help='converts from STDIN to mp4')
-    subparser.add_argument('output', type=str)
-    subparser.set_defaults(func=_movie)
-
-    subparser = subparsers.add_parser('render', help='renders script and saves as wif')
-    subparser.add_argument('input', type=str)
-    subparser.add_argument('output', type=str)
-    subparser.add_argument('-q', '--quiet', action='store_true')
-    subparser.set_defaults(func=_render_to_wif)
 
     subparser = subparsers.add_parser('convert', help='converts between file formats')
     subparser.add_argument('input', type=str)
