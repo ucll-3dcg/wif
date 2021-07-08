@@ -1,5 +1,4 @@
-import wif.gui.viewer
-from wif.bgworker import perform_async
+import wif.gui.imgview
 import wif.io
 
 
@@ -19,7 +18,7 @@ def render_script_to_collectors(script):
     async def stdout_processor(stream):
         blocks = wif.io.read_blocks_from_async_stream(stream)
         images = wif.io.read_images(blocks)
-        async for image in wif.gui.viewer.convert_images(images):
+        async for image in wif.gui.imgview.convert_images(images):
             yield image
 
     async def stderr_processor(stream):

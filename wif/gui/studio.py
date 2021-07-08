@@ -3,7 +3,7 @@ import tkinter.scrolledtext
 from tkinter import filedialog
 from tkinter import ttk
 import wif.io
-from wif.gui.viewer import Viewer, convert_images
+from wif.gui.imgview import ImageViewer, convert_images
 import wif.bgworker
 import wif.raytracer
 import wif.gui.msgview
@@ -105,7 +105,7 @@ class ViewerWindow(tk.Toplevel):
 
         viewer_frame = tk.Frame(self.__notebook)
         viewer_frame.pack(fill=tk.BOTH, expand=True)
-        viewer = Viewer(viewer_frame, image_collector)
+        viewer = ImageViewer(viewer_frame, image_collector)
         viewer.pack(fill=tk.BOTH, expand=True)
         tab_title = 'Images'
         self.__notebook.add(viewer_frame, text=tab_title)

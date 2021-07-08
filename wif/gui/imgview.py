@@ -2,7 +2,7 @@ from PIL import ImageTk
 import tkinter as tk
 
 
-class Viewer(tk.Frame):
+class ImageViewer(tk.Frame):
     def __init__(self, parent, collector):
         super().__init__(parent)
         self.__images = []
