@@ -1,29 +1,19 @@
-import tkinter as tk
 from PIL import ImageTk
-from queue import Queue
-from wif.io import read_images
-import wif.bgworker as bgworker
+import tkinter as tk
 
 
 class Viewer(tk.Frame):
-    def __init__(self, parent, blocks):
+    def __init__(self, parent, collector):
         super().__init__(parent)
         self.__images = []
         self.__create_variables()
         self.pack()
         self.__create_widgets()
         self.__tick()
-        self.__read_images_in_background(blocks)
+        self.__read_images_in_background(collector)
 
-    def __read_images_in_background(self, blocks):
-        async def read():
-            async for image in read_images(blocks):
-                yield ImageTk.PhotoImage(image)
-
-        collector = bgworker.Collector(read())
-
+    def __read_images_in_background(self, collector):
         def fetch_images_from_queue():
-            nonlocal collector
             while collector.items_available:
                 image = collector.retrieve()
                 self.__images.append(image)
@@ -81,3 +71,12 @@ class Viewer(tk.Frame):
 
     def __schedule_tick(self):
         self.after(1000 // self.__fps.get(), self.__tick)
+
+
+def convert_image(image):
+    return ImageTk.PhotoImage(image)
+
+
+async def convert_images(images):
+    async for image in images:
+        yield convert_image(image)

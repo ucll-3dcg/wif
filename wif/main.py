@@ -5,7 +5,7 @@ import aiofile
 from wif.io import read_images, read_blocks
 import wif.io
 import wif.bgworker
-from wif.viewer import Viewer
+import wif.viewer
 from wif.gui import StudioApplication
 from wif.version import __version__
 import wif.raytracer
@@ -46,7 +46,10 @@ async def info(args):
 async def viewer(args):
     root = tk.Tk()
     blocks = read_blocks(args.input, 500000)
-    Viewer(root, blocks).mainloop()
+    images = read_images(blocks)
+    gui_images = wif.viewer.convert_images(images)
+    collector = wif.bgworker.Collector(gui_images)
+    wif.viewer.Viewer(root, collector).mainloop()
 
 
 async def gui(args):
@@ -195,7 +198,10 @@ async def _wif_to_mp4(args):
 async def _wif_to_gui(args):
     root = tk.Tk()
     blocks = read_blocks(args.input, 500000)
-    Viewer(root, blocks).mainloop()
+    images = read_images(blocks)
+    gui_images = wif.viewer.convert_images(images)
+    collector = wif.bgworker.Collector(gui_images)
+    wif.viewer.Viewer(root, collector).mainloop()
 
 
 async def _convert(args):
