@@ -6,7 +6,7 @@ import wif.io
 from wif.gui.viewer import Viewer, convert_images
 import wif.bgworker
 import wif.raytracer
-
+import wif.gui.msgview
 
 class EditorTab:
     def __init__(self, parent_notebook, filename, contents):
@@ -110,20 +110,6 @@ class ViewerWindow(tk.Toplevel):
         tab_title = 'Images'
         self.__notebook.add(viewer_frame, text=tab_title)
 
-        message_frame = tk.Frame(self.__notebook)
-        message_frame.pack(fill=tk.BOTH, expand=True)
-        self.__message_viewer = tk.scrolledtext.ScrolledText(message_frame)
-        self.__message_viewer.pack(fill=tk.BOTH, expand=True)
-        self.__message_viewer.insert('1.0', 'test')
+        message_viewer = wif.gui.msgview.MessageViewer(self.__notebook, message_collector)
         tab_title = 'Messages'
-        self.__notebook.add(message_frame, text=tab_title)
-
-        self.__message_collector = message_collector
-        self.__fetch_messages()
-
-    def __fetch_messages(self):
-        while self.__message_collector.items_available:
-            message = self.__message_collector.retrieve()
-            self.__message_viewer.insert(tk.END, message)
-        if not self.__message_collector.finished:
-            self.after(100, self.__fetch_messages)
+        self.__notebook.add(message_viewer, text=tab_title)
