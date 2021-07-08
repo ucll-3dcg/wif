@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.scrolledtext
 from tkinter import filedialog
 from tkinter import ttk
 import wif.io
@@ -110,7 +111,7 @@ class ViewerWindow(tk.Toplevel):
 
         message_frame = tk.Frame(self.__notebook)
         message_frame.pack(fill=tk.BOTH, expand=True)
-        self.__message_viewer = tk.Text(message_frame)
+        self.__message_viewer = tk.scrolledtext.ScrolledText(message_frame)
         self.__message_viewer.pack(fill=tk.BOTH, expand=True)
         self.__message_viewer.insert('1.0', 'test')
         tab_title = 'messages'
