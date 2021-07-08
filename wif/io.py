@@ -1,3 +1,4 @@
+import asyncio
 import aiofile
 import base64
 import struct
@@ -98,3 +99,30 @@ async def read_images(blocks):
     async for frame in read_frames(blocks):
         image = await frame_to_image(frame)
         yield image
+
+
+async def open_subprocess(
+        process_path,
+        *args,
+        input=None,
+        stdout_processor=None,
+        stderr_processor=None):
+
+    stdin = asyncio.subprocess.PIPE if input else None
+    stdout = asyncio.subprocess.PIPE if stdout_processor else None
+    stderr = asyncio.subprocess.PIPE if stderr_processor else None
+    process = await asyncio.create_subprocess_exec(process_path, *args, stdin=stdin, stdout=stdout, stderr=stderr)
+
+    if input:
+        process.stdin.write(input)
+        await process.stdin.drain()
+        process.stdin.close()
+
+    processors = []
+    if stdout_processor:
+        processors.append(stdout_processor(process.stdout))
+    if stderr_processor:
+        processors.append(stderr_processor(process.stderr))
+
+    await asyncio.gather(*processors)
+    await process.wait()
