@@ -30,7 +30,7 @@ async def info(args):
     if args.input == '-':
         blocks = read_blocks_from_stdin(500000)
     else:
-        read_blocks_from_file(args.input, 500000)
+        blocks = read_blocks_from_file(args.input, 500000)
     sizes = []
     async for image in read_images(blocks):
         sizes.append((image.width, image.height))
