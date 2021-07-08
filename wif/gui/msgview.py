@@ -1,5 +1,4 @@
 import tkinter as tk
-import tkinter.scrolledtext
 
 
 class MessageViewer(tk.Frame):
