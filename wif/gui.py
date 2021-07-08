@@ -66,6 +66,7 @@ class StudioApplication(tk.Frame):
     def __add_editor_tab(self, filename, contents):
         tab = EditorTab(self.__notebook, filename, contents)
         self.__tabs.append(tab)
+        self.__notebook.select(len(self.__tabs) - 1)
 
     def __open_wif_viewer(self, path):
         blocks = wif.io.read_blocks_from_file(path)
@@ -106,7 +107,7 @@ class ViewerWindow(tk.Toplevel):
         viewer_frame.pack(fill=tk.BOTH, expand=True)
         viewer = Viewer(viewer_frame, image_collector)
         viewer.pack(fill=tk.BOTH, expand=True)
-        tab_title = 'messages'
+        tab_title = 'Images'
         self.__notebook.add(viewer_frame, text=tab_title)
 
         message_frame = tk.Frame(self.__notebook)
@@ -114,7 +115,7 @@ class ViewerWindow(tk.Toplevel):
         self.__message_viewer = tk.scrolledtext.ScrolledText(message_frame)
         self.__message_viewer.pack(fill=tk.BOTH, expand=True)
         self.__message_viewer.insert('1.0', 'test')
-        tab_title = 'messages'
+        tab_title = 'Messages'
         self.__notebook.add(message_frame, text=tab_title)
 
         self.__message_collector = message_collector
