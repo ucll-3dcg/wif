@@ -183,9 +183,6 @@ def _process_command_line_arguments():
     subparser.add_argument('-q', '--quiet', action='store_true')
     subparser.set_defaults(func=_convert)
 
-    subparser = subparsers.add_parser('test', help='test')
-    subparser.set_defaults(func=_test)
-
     args = parser.parse_args()
 
     wif.bgworker.init()
@@ -193,13 +190,6 @@ def _process_command_line_arguments():
         asyncio.run(args.func(args))
     finally:
         wif.bgworker.exit()
-
-
-async def _test(args):
-    filename = 'g:/temp/zoom.chai'
-    with open(filename) as file:
-        script = file.read()
-    await wif.raytracer.render_script(script)
 
 
 def main():
