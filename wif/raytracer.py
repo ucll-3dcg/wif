@@ -17,23 +17,24 @@ async def render_script(script, stdout_processor, stderr_processor):
         stderr_processor=stderr_processor)
 
 
-def render_script_to_collector(script):
-    collector = Collector()
-
-    async def send_to_collector(stream):
+def render_script_to_collectors(script):
+    async def stdout_processor(stream):
         blocks = wif.io.read_blocks_from_async_stream(stream)
         images = wif.io.read_images(blocks)
-        gui_images = wif.viewer.convert_images(images)
-        collector.collect_in_background(gui_images)
+        async for image in wif.viewer.convert_images(images):
+            yield image
 
-    async def process_messages(stream):
-        await stream.read()
+    async def stderr_processor(stream):
+        while True:
+            line = await stream.readline()
+            if not line:
+                break
+            yield line.decode('ascii')
 
-    render = render_script(
-        script,
-        stdout_receiver=send_to_collector,
-        stderr_receiver=process_messages)
-
-    perform_async(render)
-
-    return collector
+    return wif.io.open_subprocess_to_collectors(
+        RAYTRACER,
+        '-s',
+        '-',
+        input=script,
+        stdout_processor=stdout_processor,
+        stderr_processor=stderr_processor)

@@ -112,7 +112,7 @@ async def _chai_to_mp4(args):
 
 async def _chai_to_gui(args):
     script = _read_script(args.input)
-    image_collector = wif.raytracer.render_script_to_collector(script)
+    image_collector, message_collector = wif.raytracer.render_script_to_collectors(script)
 
     root = tk.Tk()
     wif.viewer.Viewer(root, image_collector).mainloop()

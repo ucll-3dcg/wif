@@ -1,4 +1,5 @@
 import asyncio
+from wif.bgworker import Collector, perform_async
 import aiofile
 import base64
 import struct
@@ -107,13 +108,14 @@ async def open_subprocess(
         input=None,
         stdout_processor=None,
         stderr_processor=None):
-
     stdin = asyncio.subprocess.PIPE if input else None
     stdout = asyncio.subprocess.PIPE if stdout_processor else None
     stderr = asyncio.subprocess.PIPE if stderr_processor else None
     process = await asyncio.create_subprocess_exec(process_path, *args, stdin=stdin, stdout=stdout, stderr=stderr)
 
     if input:
+        if isinstance(input, str):
+            input = input.encode('ascii')
         process.stdin.write(input)
         await process.stdin.drain()
         process.stdin.close()
@@ -126,3 +128,30 @@ async def open_subprocess(
 
     await asyncio.gather(*processors)
     await process.wait()
+
+
+def open_subprocess_to_collectors(
+        process_path,
+        *args,
+        input=None,
+        stdout_processor=None,
+        stderr_processor=None):
+    stdout_collector = Collector()
+    stderr_collector = Collector()
+
+    async def stdout(stream):
+        stdout_collector.collect_in_background(stdout_processor(stream))
+
+    async def stderr(stream):
+        stderr_collector.collect_in_background(stderr_processor(stream))
+
+    subprocess = open_subprocess(
+        process_path,
+        *args,
+        input=input,
+        stdout_processor=stdout,
+        stderr_processor=stderr)
+
+    perform_async(subprocess)
+
+    return (stdout_collector, stderr_collector)
