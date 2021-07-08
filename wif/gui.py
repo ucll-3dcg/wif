@@ -2,7 +2,24 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 import wif.io
-from wif.viewer import Viewer
+from wif.viewer import Viewer, convert_images
+import wif.bgworker
+import wif.raytracer
+
+
+class EditorTab:
+    def __init__(self, parent_notebook, filename, contents):
+        frame = tk.Frame(parent_notebook)
+        frame.pack(fill=tk.BOTH, expand=True)
+        self.editor = tk.Text(frame)
+        self.editor.pack(fill=tk.BOTH, expand=True)
+        self.editor.insert('1.0', contents)
+        tab_title = filename if filename else 'untitled'
+        parent_notebook.add(frame, text=tab_title)
+
+    @property
+    def script(self):
+        return self.editor.get("1.0", tk.END)
 
 
 class StudioApplication(tk.Frame):
@@ -12,6 +29,7 @@ class StudioApplication(tk.Frame):
         self.__initialize()
         self.__create_menu()
         self.__create_notebook()
+        self.__tabs = []
 
     def __initialize(self):
         self.root.geometry("1024x768")
@@ -33,7 +51,9 @@ class StudioApplication(tk.Frame):
         menubar.add_cascade(menu=file_menu, label="File", underline=0)
 
     def __render_script(self):
-        print("Rendering!")
+        script = self.selected_tab.script
+        images, messages = wif.raytracer.render_script_to_collectors(script)
+        ViewerWindow(self, images)
 
     def __create_notebook(self):
         self.__notebook = ttk.Notebook(self.master)
@@ -43,17 +63,14 @@ class StudioApplication(tk.Frame):
         self.__add_editor_tab(None, '')
 
     def __add_editor_tab(self, filename, contents):
-        frame = tk.Frame(self.__notebook)
-        frame.pack(fill=tk.BOTH, expand=True)
-        editor = tk.Text(frame)
-        editor.pack(fill=tk.BOTH, expand=True)
-        editor.insert('1.0', contents)
-        tab_title = filename if filename else 'untitled'
-        self.__notebook.add(frame, text=tab_title)
+        tab = EditorTab(self.__notebook, filename, contents)
+        self.__tabs.append(tab)
 
     def __open_wif_viewer(self, path):
-        blocks = wif.io.read_blocks_from_file(path, 500000)
-        ViewerWindow(self, blocks)
+        blocks = wif.io.read_blocks_from_file(path)
+        images = convert_images(wif.io.read_images(blocks))
+        collector = wif.bgworker.Collector(images)
+        ViewerWindow(self, collector)
 
     def __open_file(self):
         filetypes = [
@@ -61,8 +78,7 @@ class StudioApplication(tk.Frame):
             ('WIF files', '*.wif'),
             ('All files', '*.*'),
         ]
-        # filename = filedialog.askopenfilename(filetypes=filetypes)
-        filename = "../quick.wif"
+        filename = filedialog.askopenfilename(filetypes=filetypes)
         if filename.endswith('.wif'):
             self.__open_wif_viewer(filename)
         elif filename.endswith('.chai'):
@@ -73,6 +89,10 @@ class StudioApplication(tk.Frame):
     @property
     def __selected_tab_index(self):
         return self.__notebook.index(self.__notebook.select())
+
+    @property
+    def selected_tab(self):
+        return self.__tabs[self.__selected_tab_index]
 
 
 class ViewerWindow(tk.Toplevel):
