@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import asyncio
-import aiofile
 from wif.io import read_images, read_blocks
 import wif.io
 import wif.bgworker
@@ -13,7 +12,6 @@ import contextlib
 import argparse
 import tkinter as tk
 import sys
-import re
 import cv2
 import numpy
 import os

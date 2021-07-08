@@ -1,4 +1,3 @@
-import asyncio
 import aiofile
 import base64
 import struct
@@ -29,10 +28,7 @@ async def read_blocks_from_stdin(block_size=500000):
 
 async def read_blocks_from_file(path, block_size=500000):
     async with aiofile.async_open(path, 'r') as stream:
-        while True:
-            block = await stream.read(block_size)
-            if not block:
-                break
+        async for block in read_blocks_from_async_stream(stream):
             yield block
 
 
@@ -49,7 +45,9 @@ async def read_blocks_from_async_stream(stream, block_size=500000):
         data = await stream.read(block_size)
         if not data:
             break
-        yield data.decode('ascii')
+        if not isinstance(data, str):
+            data = data.decode('ascii')
+        yield data
 
 
 async def read_frames(blocks):
