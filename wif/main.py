@@ -177,7 +177,7 @@ def _process_command_line_arguments():
     subparser = subparsers.add_parser('gui', help='opens GUI')
     subparser.set_defaults(func=gui)
 
-    subparser = subparsers.add_parser('convert', help='converts between file formats')
+    subparser = subparsers.add_parser('convert', help='converts between formats')
     subparser.add_argument('input', type=str)
     subparser.add_argument('output', type=str)
     subparser.add_argument('-q', '--quiet', action='store_true')
