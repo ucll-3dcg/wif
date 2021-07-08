@@ -9,25 +9,39 @@ import re
 
 async def read_blocks(source, block_size = 500000):
     if source == 'STDIN':
-        while True:
-            block = sys.stdin.read(block_size)
-            if not block:
-                break
+        async for block in read_blocks_from_stdin(block_size):
             yield block
     elif type(source) == str:
-        path = source
-        async with aiofile.async_open(path, 'r') as stream:
-            while True:
-                block = await stream.read(block_size)
-                if not block:
-                    break
-                yield block
+        async for block in read_blocks_from_file(source, block_size):
+            yield block
     else:
+        async for block in read_blocks_from_sync_stream(source, block_size):
+            yield block
+
+
+async def read_blocks_from_stdin(block_size=500000):
+    while True:
+        block = sys.stdin.read(block_size)
+        if not block:
+            break
+        yield block
+
+
+async def read_blocks_from_file(path, block_size=500000):
+    async with aiofile.async_open(path, 'r') as stream:
         while True:
-            block = source.read(block_size)
+            block = await stream.read(block_size)
             if not block:
                 break
             yield block
+
+
+async def read_blocks_from_sync_stream(stream, block_size=500000):
+    while True:
+        block = stream.read(block_size)
+        if not block:
+            break
+        yield block
 
 
 async def read_blocks_from_async_stream(stream, block_size=500000):
