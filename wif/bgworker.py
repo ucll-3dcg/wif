@@ -35,6 +35,13 @@ def perform_async(f):
 
 
 class Collector:
+    @staticmethod
+    def create_empty():
+        async def empty_generator():
+            for x in []:
+                yield x
+        return Collector(empty_generator)
+
     def __init__(self, async_generator=None):
         self.__queue = Queue()
         self.__finished = False

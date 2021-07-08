@@ -53,7 +53,7 @@ class StudioApplication(tk.Frame):
     def __render_script(self):
         script = self.selected_tab.script
         images, messages = wif.raytracer.render_script_to_collectors(script)
-        ViewerWindow(self, images)
+        ViewerWindow(self, images, messages)
 
     def __create_notebook(self):
         self.__notebook = ttk.Notebook(self.master)
@@ -70,7 +70,7 @@ class StudioApplication(tk.Frame):
         blocks = wif.io.read_blocks_from_file(path)
         images = convert_images(wif.io.read_images(blocks))
         collector = wif.bgworker.Collector(images)
-        ViewerWindow(self, collector)
+        ViewerWindow(self, collector, wif.bgworker.Collector.create_empty())
 
     def __open_file(self):
         filetypes = [
@@ -96,22 +96,32 @@ class StudioApplication(tk.Frame):
 
 
 class ViewerWindow(tk.Toplevel):
-    def __init__(self, parent, blocks):
+    def __init__(self, parent, image_collector, message_collector):
         super().__init__(parent)
         self.__notebook = ttk.Notebook(self)
         self.__notebook.pack(fill=tk.BOTH, expand=True)
 
         viewer_frame = tk.Frame(self.__notebook)
         viewer_frame.pack(fill=tk.BOTH, expand=True)
-        viewer = Viewer(viewer_frame, blocks)
+        viewer = Viewer(viewer_frame, image_collector)
         viewer.pack(fill=tk.BOTH, expand=True)
         tab_title = 'messages'
         self.__notebook.add(viewer_frame, text=tab_title)
 
         message_frame = tk.Frame(self.__notebook)
         message_frame.pack(fill=tk.BOTH, expand=True)
-        editor = tk.Text(message_frame)
-        editor.pack(fill=tk.BOTH, expand=True)
-        editor.insert('1.0', 'test')
+        self.__message_viewer = tk.Text(message_frame)
+        self.__message_viewer.pack(fill=tk.BOTH, expand=True)
+        self.__message_viewer.insert('1.0', 'test')
         tab_title = 'messages'
         self.__notebook.add(message_frame, text=tab_title)
+
+        self.__message_collector = message_collector
+        self.__fetch_messages()
+
+    def __fetch_messages(self):
+        while self.__message_collector.items_available:
+            message = self.__message_collector.retrieve()
+            self.__message_viewer.insert(tk.END, message)
+        if not self.__message_collector.finished:
+            self.after(100, self.__fetch_messages)
