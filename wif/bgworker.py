@@ -35,12 +35,13 @@ def perform_async(f):
 
 
 class Collector:
-    def __init__(self, async_generator):
+    def __init__(self, async_generator=None):
         self.__queue = Queue()
         self.__finished = False
-        self.__collect_elements_in_background(async_generator)
+        if async_generator:
+            self.collect_in_background(async_generator)
 
-    def __collect_elements_in_background(self, async_generator):
+    def collect_in_background(self, async_generator):
         async def collect():
             async for element in async_generator:
                 self.__queue.put(element)

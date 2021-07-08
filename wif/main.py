@@ -181,12 +181,12 @@ async def _chai_to_mp4(args):
         stderr_receiver=print_messages)
 
 
-# async def _chai_to_gui(args):
-#     script = _read_script(args.input)
+async def _chai_to_gui(args):
+    script = _read_script(args.input)
+    image_collector = wif.raytracer.render_script_to_collector(script)
 
-#     root = tk.Tk()
-#     blocks = read_blocks(args.input, 500000)
-#     Viewer(root, blocks).mainloop()
+    root = tk.Tk()
+    wif.viewer.Viewer(root, image_collector).mainloop()
 
 
 async def _wif_to_mp4(args):
@@ -213,8 +213,8 @@ async def _convert(args):
             await _chai_to_wif(args)
         elif output.endswith('mp4'):
             await _chai_to_mp4(args)
-        # elif output == 'gui':
-        #     await _chai_to_gui(args)
+        elif output == 'gui':
+            await _chai_to_gui(args)
         else:
             print('Unsupported conversion')
     elif input.endswith('wif'):
