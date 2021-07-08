@@ -7,7 +7,7 @@ import sys
 import re
 
 
-async def read_blocks(source, block_size = 500000):
+async def read_blocks(source, block_size=500000):
     if source == 'STDIN':
         async for block in read_blocks_from_stdin(block_size):
             yield block
