@@ -1,13 +1,15 @@
 import wif.gui.imgview
 import wif.io
+import wif.config
 
 
-RAYTRACER = r"G:\repos\ucll\3dcg\raytracer\raytracer\x64\Release\raytracer.exe"
+def _raytracer_path():
+    return wif.config.configuration['raytracer']
 
 
 async def render_script(script, stdout_processor, stderr_processor):
     wif.io.open_subprocess(
-        RAYTRACER,
+        _raytracer_path(),
         '-s',
         '-',
         stdout_processor=stdout_processor,
@@ -29,7 +31,7 @@ def render_script_to_collectors(script):
             yield line.decode('ascii')
 
     return wif.io.open_subprocess_to_collectors(
-        RAYTRACER,
+        _raytracer_path(),
         '-s',
         '-',
         input=script,

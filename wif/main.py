@@ -3,6 +3,7 @@
 import asyncio
 from wif.io import read_blocks_from_file, read_blocks_from_stdin, read_images
 import wif.io
+import wif.config
 import wif.bgworker
 import wif.gui.imgview
 from wif.gui.studio import StudioApplication
@@ -12,8 +13,6 @@ import contextlib
 import argparse
 import tkinter as tk
 import sys
-import cv2
-import numpy
 import os
 
 
@@ -82,23 +81,11 @@ async def _chai_to_wif(args):
         stderr_receiver=print_messages)
 
 
-async def _create_mp4(images, output):
-    writer = None
-    async for image in images:
-        if not writer:
-            codec = cv2.VideoWriter_fourcc(*'avc1')
-            writer = cv2.VideoWriter(output, codec, 30, image.size)
-        converted = cv2.cvtColor(numpy.array(image), cv2.COLOR_RGB2BGR)
-        writer.write(converted)
-    if writer:
-        writer.release()
-
-
 async def _chai_to_mp4(args):
     async def write_to_mp4(stream):
         blocks = wif.io.read_blocks_from_async_stream(stream)
         images = wif.io.read_images(blocks)
-        await _create_mp4(images, args.output)
+        await wif.io.create_mp4(images, args.output)
 
     output_stream = os.devnull if args.quiet else sys.stdout
     print_messages = create_message_printer(output_stream)
@@ -124,7 +111,7 @@ async def _wif_to_mp4(args):
     else:
         blocks = read_blocks_from_file(args.input)
     images = wif.io.read_images(blocks)
-    await _create_mp4(images, args.output)
+    await wif.io.create_mp4(images, args.output)
 
 
 async def _wif_to_gui(args):
@@ -163,6 +150,30 @@ async def _convert(args):
         print('Unsupported conversion')
 
 
+async def _configure(args):
+    if not args.path:
+        print(f'Configuration file can be found at {wif.config.get_configuration_path()}')
+        print(wif.config.configuration)
+    elif not args.value:
+        print(wif.config.configuration[args.path])
+    else:
+        path = args.path
+        value = args.value
+        if path == 'raytracer':
+            if os.path.exists(value):
+                absolute_path = os.path.abspath(value)
+                wif.config.configuration['raytracer'] = absolute_path
+        elif path == 'block_size':
+            wif.config.configuration['block_size'] = int(value)
+        else:
+            raise KeyError(f'Unrecognized configuration path {path}')
+        wif.config.write()
+
+
+async def _delete_configuration_file(args):
+    wif.config.reset_configuration()
+
+
 def _process_command_line_arguments():
     parser = argparse.ArgumentParser()
     parser.set_defaults(func=lambda args: parser.print_help())
@@ -183,6 +194,14 @@ def _process_command_line_arguments():
     subparser.add_argument('-q', '--quiet', action='store_true')
     subparser.set_defaults(func=_convert)
 
+    subparser = subparsers.add_parser('config', help='configure')
+    subparser.add_argument('path', type=str, nargs='?')
+    subparser.add_argument('value', type=str, nargs='?')
+    subparser.set_defaults(func=_configure)
+
+    subparser = subparsers.add_parser('delconfig', help='delete configuration file')
+    subparser.set_defaults(func=_delete_configuration_file)
+
     args = parser.parse_args()
 
     wif.bgworker.init()
@@ -193,4 +212,5 @@ def _process_command_line_arguments():
 
 
 def main():
+    wif.config.init()
     _process_command_line_arguments()
