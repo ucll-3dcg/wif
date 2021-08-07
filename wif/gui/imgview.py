@@ -1,29 +1,49 @@
 from PIL import ImageTk
 import tkinter as tk
+import wif.io
+import wif.bgworker
+import wif.concurrency
 
 
 class ImageViewer(tk.Frame):
-    def __init__(self, parent, collector):
+    def __init__(self, parent, images):
         super().__init__(parent)
+        self.__menu = self.__create_menu()
         self.__images = []
         self.__create_variables()
         self.pack()
         self.__create_widgets()
         self.__tick()
-        self.__read_images_in_background(collector)
+        self.__read_images_in_background(images)
 
-    def __read_images_in_background(self, collector):
-        def fetch_images_from_queue():
-            while collector.items_available:
-                image = collector.retrieve()
+    def __create_menu(self):
+        menu = tk.Menu(self.master, tearoff=False)
+        save_menu = tk.Menu(menu, tearoff=False)
+        save_menu.add_command(label='Save as mp4', underline=0, command=self.__save_as_mp4)
+        menu.add_cascade(menu=save_menu, label='Save', underline=0)
+        return menu
+
+    def __save_as_mp4(self):
+        async def images():
+            for image in self.__images:
+                print(dir(image))
+                yield image
+        task = wif.io.create_mp4(images(), 'test.mp4')
+        wif.bgworker.perform_async(task)
+
+    def __read_images_in_background(self, images):
+        converted_images = convert_images(images)
+        channel = wif.concurrency.generate_in_background(converted_images)
+
+        def fetch_images_from_channel():
+            while not channel.empty:
+                image = channel.receive()
                 self.__images.append(image)
-
             self.__frame_slider.configure(to=len(self.__images) - 1)
+            if not channel.finished:
+                self.after(100, fetch_images_from_channel)
 
-            if not collector.finished:
-                self.after(100, fetch_images_from_queue)
-
-        fetch_images_from_queue()
+        fetch_images_from_channel()
 
     def __create_variables(self):
         self.__create_index_variable()
@@ -55,7 +75,14 @@ class ImageViewer(tk.Frame):
         animation_checkbox.pack()
         self.__label = tk.Label(self)
         self.__label.pack()
+        self.__label.bind('<Button-3>', self.__show_context_menu)
         self.__update()
+
+    def __show_context_menu(self, event):
+        try:
+            self.__menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            self.__menu.grab_release()
 
     def __update(self):
         if self.__images:
@@ -77,6 +104,6 @@ def convert_image(image):
     return ImageTk.PhotoImage(image)
 
 
-async def convert_images(images):
-    async for image in images:
+def convert_images(images):
+    for image in images:
         yield convert_image(image)

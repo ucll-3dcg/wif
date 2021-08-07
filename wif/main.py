@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import asyncio
+import wif.reading
 from wif.io import read_blocks_from_file, read_blocks_from_stdin, read_images
 import wif.io
 import wif.config
@@ -9,11 +10,13 @@ import wif.gui.imgview
 from wif.gui.studio import StudioApplication
 from wif.version import __version__
 import wif.raytracer
+import wif.concurrency
 import contextlib
 import argparse
 import tkinter as tk
 import sys
 import os
+from threading import Thread
 
 
 @contextlib.contextmanager
@@ -66,19 +69,23 @@ def create_message_printer(output_stream):
 
 
 async def _chai_to_wif(args):
-    async def write_to_wif(stream):
+    script = _read_script(args.input)
+    (blocks, messages) = wif.raytracer.invoke_raytracer(script)
+
+    def print_messages():
+        for message in messages:
+            print(message, end="")
+
+    def write_blocks():
         with open(args.output, 'w') as file:
-            async for block in wif.io.read_blocks_from_async_stream(stream):
+            for block in blocks:
                 file.write(block)
 
-    output_stream = os.devnull if args.quiet else sys.stdout
-    print_messages = create_message_printer(output_stream)
-    script = _read_script(args.input)
+    t1 = Thread(target=print_messages).start()
+    t2 = Thread(target=write_blocks).start()
 
-    await wif.raytracer.render_script(
-        script,
-        stdout_receiver=write_to_wif,
-        stderr_receiver=print_messages)
+    t1.join()
+    t2.join()
 
 
 async def _chai_to_mp4(args):
@@ -107,23 +114,21 @@ async def _chai_to_gui(args):
 
 async def _wif_to_mp4(args):
     if args.input == '-':
-        blocks = read_blocks_from_stdin()
+        blocks = wif.reading.read_blocks_from_stream(sys.stdin)
     else:
-        blocks = read_blocks_from_file(args.input)
-    images = wif.io.read_images(blocks)
-    await wif.io.create_mp4(images, args.output)
+        blocks = wif.reading.read_blocks_from_file(args.input)
+    images = wif.reading.read_images(blocks)
+    wif.io.create_mp4_sync(images, args.output)
 
 
 async def _wif_to_gui(args):
     root = tk.Tk()
     if args.input == '-':
-        blocks = read_blocks_from_stdin()
+        blocks = wif.reading.read_blocks_from_stdin()
     else:
-        blocks = read_blocks_from_file(args.input)
-    images = read_images(blocks)
-    gui_images = wif.gui.imgview.convert_images(images)
-    collector = wif.bgworker.Collector(gui_images)
-    wif.gui.imgview.ImageViewer(root, collector).mainloop()
+        blocks = wif.reading.read_blocks_from_file(args.input)
+    images = wif.reading.read_images(blocks)
+    wif.gui.imgview.ImageViewer(root, images).mainloop()
 
 
 async def _convert(args):

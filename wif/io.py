@@ -6,6 +6,8 @@ import struct
 from PIL import Image
 import sys
 import re
+import cv2
+import numpy
 
 
 async def read_blocks_from_stdin(block_size=500000):
@@ -155,3 +157,27 @@ def open_subprocess_to_collectors(
     perform_async(subprocess)
 
     return (stdout_collector, stderr_collector)
+
+
+async def create_mp4(images, output):
+    writer = None
+    async for image in images:
+        if not writer:
+            codec = cv2.VideoWriter_fourcc(*'avc1')
+            writer = cv2.VideoWriter(output, codec, 30, image.size)
+        converted = cv2.cvtColor(numpy.array(image), cv2.COLOR_RGB2BGR)
+        writer.write(converted)
+    if writer:
+        writer.release()
+
+
+def create_mp4_sync(images, output):
+    writer = None
+    for image in images:
+        if not writer:
+            codec = cv2.VideoWriter_fourcc(*'avc1')
+            writer = cv2.VideoWriter(output, codec, 30, image.size)
+        converted = cv2.cvtColor(numpy.array(image), cv2.COLOR_RGB2BGR)
+        writer.write(converted)
+    if writer:
+        writer.release()

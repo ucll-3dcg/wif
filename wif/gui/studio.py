@@ -11,7 +11,6 @@ import wif.gui.msgview
 
 class EditorTab:
     def __init__(self, parent_notebook, filename, contents):
-        self.__parent_notebook = parent_notebook
         frame = tk.Frame(parent_notebook)
         frame.pack(fill=tk.BOTH, expand=True)
         self.editor = tk.Text(frame)
@@ -72,7 +71,8 @@ class StudioApplication(tk.Frame):
 
     def __render_script(self):
         script = self.selected_tab.script
-        images, messages = wif.raytracer.render_script_to_collectors(script)
+        image_data, messages = wif.raytracer.invoke_raytracer(script)
+        images = wif.reading.read_images(image_data)
         ViewerWindow(self, images, messages)
 
     def __create_notebook(self):
@@ -88,10 +88,9 @@ class StudioApplication(tk.Frame):
         self.__notebook.select(len(self.__notebook.tabs()) - 1)
 
     def __open_wif_viewer(self, path):
-        blocks = wif.io.read_blocks_from_file(path)
-        images = convert_images(wif.io.read_images(blocks))
-        collector = wif.bgworker.Collector(images)
-        ViewerWindow(self, collector, wif.bgworker.Collector.create_empty())
+        blocks = wif.reading.read_blocks_from_file(path)
+        images = wif.reading.read_images(blocks)
+        ViewerWindow(self, images)
 
     def __open_file(self):
         filetypes = [
@@ -134,18 +133,19 @@ class StudioApplication(tk.Frame):
 
 
 class ViewerWindow(tk.Toplevel):
-    def __init__(self, parent, image_collector, message_collector):
+    def __init__(self, parent, images, messages=None):
         super().__init__(parent)
         self.__notebook = ttk.Notebook(self)
         self.__notebook.pack(fill=tk.BOTH, expand=True)
 
         viewer_frame = tk.Frame(self.__notebook)
         viewer_frame.pack(fill=tk.BOTH, expand=True)
-        viewer = ImageViewer(viewer_frame, image_collector)
+        viewer = ImageViewer(viewer_frame, images)
         viewer.pack(fill=tk.BOTH, expand=True)
         tab_title = 'Images'
         self.__notebook.add(viewer_frame, text=tab_title)
 
-        message_viewer = wif.gui.msgview.MessageViewer(self.__notebook, message_collector)
-        tab_title = 'Messages'
-        self.__notebook.add(message_viewer, text=tab_title)
+        if messages is not None:
+            message_viewer = wif.gui.msgview.MessageViewer(self.__notebook, messages)
+            tab_title = 'Messages'
+            self.__notebook.add(message_viewer, text=tab_title)
