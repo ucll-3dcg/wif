@@ -63,7 +63,7 @@ class ImageViewer(tk.Frame):
                                                 defaultextension='.mp4')
         if filename:
             def task():
-                wif.io.create_mp4_sync(self.__original_images, filename)
+                wif.io.create_mp4(self.__original_images, filename)
             wif.concurrency.run_in_background(task)
 
     def __read_images_in_background(self, images):

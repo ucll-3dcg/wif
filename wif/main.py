@@ -93,7 +93,7 @@ async def _chai_to_mp4(args):
     script = _read_script(args.input)
     target_filename = args.output
     images, _ = wif.raytracer.raytrace(script, ignore_messages=True)
-    wif.io.create_mp4_sync(images, target_filename)
+    wif.io.create_mp4(images, target_filename)
 
     # async def write_to_mp4(stream):
     #     blocks = wif.io.read_blocks_from_async_stream(stream)
@@ -122,7 +122,7 @@ async def _wif_to_mp4(args):
     else:
         blocks = wif.reading.read_blocks_from_file(args.input)
     images = wif.reading.read_images(blocks)
-    wif.io.create_mp4_sync(images, args.output)
+    wif.io.create_mp4(images, args.output)
 
 
 async def _wif_to_gui(args):
