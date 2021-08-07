@@ -6,6 +6,9 @@ import wif.concurrency
 from tkinter import filedialog
 
 
+_save_as_mp4_caption = 'Save as mp4'
+
+
 class ImageViewer(tk.Frame):
     def __init__(self, parent, images):
         super().__init__(parent)
@@ -15,6 +18,7 @@ class ImageViewer(tk.Frame):
         self.__create_variables()
         self.__create_widgets()
         self.__create_keybindings()
+        self.__done_receiving_images = False
         self.__tick()
         self.__read_images_in_background(images)
 
@@ -26,11 +30,12 @@ class ImageViewer(tk.Frame):
 
     def __create_menu(self):
         menu = tk.Menu(self.master, tearoff=False)
-        save_menu = tk.Menu(menu, tearoff=False)
-        save_menu.add_command(label='Save as mp4',
-                              underline=0,
-                              command=self.__save_as_mp4)
-        menu.add_cascade(menu=save_menu,
+        self.__save_menu = tk.Menu(menu, tearoff=False)
+        self.__save_menu.add_command(label=_save_as_mp4_caption,
+                                     state='disabled',
+                                     underline=0,
+                                     command=self.__save_as_mp4)
+        menu.add_cascade(menu=self.__save_menu,
                          label='Save',
                          underline=0)
         return menu
@@ -56,8 +61,17 @@ class ImageViewer(tk.Frame):
             self.__framecount.set(len(self.__converted_images))
             if not channel.finished:
                 self.after(100, fetch_images_from_channel)
+            else:
+                self.__on_done_receiving_images()
 
         fetch_images_from_channel()
+
+    def __on_done_receiving_images(self):
+        '''
+        Called when all images have been received.
+        '''
+        self.__done_receiving_images = True
+        self.__save_menu.entryconfig(_save_as_mp4_caption, state='normal')
 
     def __create_variables(self):
         self.__create_frame_index_variable()
