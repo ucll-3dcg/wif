@@ -7,7 +7,7 @@ import wif.io
 import wif.config
 import wif.bgworker
 import wif.gui.imgview
-import wif.gui.studio
+from wif.gui.studio import ViewerWindow
 from wif.gui.studio import StudioApplication
 from wif.version import __version__
 import wif.raytracer
@@ -108,9 +108,7 @@ async def _chai_to_mp4(args):
 async def _chai_to_gui(args):
     script = _read_script(args.input)
     images, messages = wif.raytracer.raytrace(script)
-    root = tk.Tk()
-    viewer = wif.gui.studio.ViewerWindow(root, images, messages)
-    root.mainloop()
+    ViewerWindow(None, images, messages).mainloop()
 
 
 async def _wif_to_mp4(args):
@@ -128,7 +126,7 @@ async def _wif_to_gui(args):
     else:
         blocks = wif.reading.read_blocks_from_file(args.input)
     images = wif.reading.read_images(blocks)
-    wif.gui.studio.ViewerWindow(None, images).mainloop()
+    ViewerWindow(None, images).mainloop()
 
 
 async def _convert(args):
