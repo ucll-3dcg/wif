@@ -71,9 +71,11 @@ class StudioApplication(tk.Frame):
 
     def __render_script(self):
         script = self.selected_tab.script
-        image_data, messages = wif.raytracer.invoke_raytracer(script)
-        images = wif.reading.read_images(image_data)
-        ViewerWindow(self, images, messages)
+        images, messages = wif.raytracer.raytrace(script)
+        self.__view(images, messages)
+
+    def __view(self, images, messages = None):
+        ViewerWindow(tk.Toplevel(), images, messages)
 
     def __create_notebook(self):
         self.__notebook = ttk.Notebook(self.master)
@@ -90,7 +92,7 @@ class StudioApplication(tk.Frame):
     def __open_wif_viewer(self, path):
         blocks = wif.reading.read_blocks_from_file(path)
         images = wif.reading.read_images(blocks)
-        ViewerWindow(self, images)
+        self.__view(images)
 
     def __open_file(self):
         filetypes = [
@@ -132,7 +134,7 @@ class StudioApplication(tk.Frame):
         return self.__tabs[self.__selected_tab_index]
 
 
-class ViewerWindow(tk.Toplevel):
+class ViewerWindow(tk.Frame):
     def __init__(self, parent, images, messages=None):
         super().__init__(parent)
         self.__notebook = ttk.Notebook(self)
@@ -149,3 +151,4 @@ class ViewerWindow(tk.Toplevel):
             message_viewer = wif.gui.msgview.MessageViewer(self.__notebook, messages)
             tab_title = 'Messages'
             self.__notebook.add(message_viewer, text=tab_title)
+        self.pack(expand=True, fill=tk.BOTH)

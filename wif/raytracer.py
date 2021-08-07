@@ -18,3 +18,9 @@ def invoke_raytracer(script):
     messages = wif.reading.read_lines_from_stream(stderr)
 
     return (blocks, messages)
+
+
+def raytrace(script):
+    blocks, messages = invoke_raytracer(script)
+    images = wif.reading.read_images(blocks)
+    return (images, messages)
