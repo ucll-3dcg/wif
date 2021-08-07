@@ -3,6 +3,7 @@ import tkinter as tk
 import wif.io
 import wif.bgworker
 import wif.concurrency
+from tkinter import filedialog
 
 
 class ImageViewer(tk.Frame):
@@ -35,9 +36,13 @@ class ImageViewer(tk.Frame):
         return menu
 
     def __save_as_mp4(self):
-        def task():
-            wif.io.create_mp4_sync(self.__original_images, 'test.mp4')
-        wif.concurrency.run_in_background(task)
+        filetypes = [('MP4 Files', '*.mp4')]
+        filename = filedialog.asksaveasfilename(filetypes=filetypes,
+                                                defaultextension='.mp4')
+        if filename:
+            def task():
+                wif.io.create_mp4_sync(self.__original_images, filename)
+            wif.concurrency.run_in_background(task)
 
     def __read_images_in_background(self, images):
         converted_images = self.__convert_images(images)
