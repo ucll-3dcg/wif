@@ -2,7 +2,6 @@ import base64
 import struct
 from PIL import Image
 import re
-import wif.concurrency
 import subprocess
 
 
@@ -106,11 +105,3 @@ def open_subprocess(command, input):
     process.stdin.close()
 
     return (process.stdout, process.stderr)
-
-    # stdout_data = read_blocks_from_stream(process.stdout)
-    # stderr_data = read_messages_from_stream(process.stderr)
-
-    # stdout_channel = wif.concurrency.generate_in_background(stdout_data)
-    # stderr_channel = wif.concurrency.generate_in_background(stderr_data)
-
-    # return (stdout_channel, stderr_channel)
