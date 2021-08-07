@@ -9,7 +9,8 @@ class ImageViewer(tk.Frame):
     def __init__(self, parent, images):
         super().__init__(parent)
         self.__menu = self.__create_menu()
-        self.__images = []
+        self.__original_images = []
+        self.__converted_images = []
         self.__create_variables()
         self.__create_widgets()
         self.__create_keybindings()
@@ -34,22 +35,20 @@ class ImageViewer(tk.Frame):
         return menu
 
     def __save_as_mp4(self):
-        async def images():
-            for image in self.__images:
-                print(dir(image))
-                yield image
-        task = wif.io.create_mp4(images(), 'test.mp4')
-        wif.bgworker.perform_async(task)
+        def task():
+            wif.io.create_mp4_sync(self.__original_images, 'test.mp4')
+        wif.concurrency.run_in_background(task)
 
     def __read_images_in_background(self, images):
-        converted_images = convert_images(images)
+        converted_images = self.__convert_images(images)
         channel = wif.concurrency.generate_in_background(converted_images)
 
         def fetch_images_from_channel():
             while not channel.empty:
-                image = channel.receive()
-                self.__images.append(image)
-            self.__framecount.set(len(self.__images))
+                original_image, converted_image = channel.receive()
+                self.__original_images.append(original_image)
+                self.__converted_images.append(converted_image)
+            self.__framecount.set(len(self.__converted_images))
             if not channel.finished:
                 self.after(100, fetch_images_from_channel)
 
@@ -107,25 +106,23 @@ class ImageViewer(tk.Frame):
             self.__menu.grab_release()
 
     def __update(self):
-        if self.__images:
-            image = self.__images[self.__index.get()]
+        if self.__converted_images:
+            image = self.__converted_images[self.__index.get()]
             self.__label.configure(image=image)
             self.__label.image = image
 
     def __tick(self):
-        if self.__images:
-            self.__index.set((self.__index.get() + 1) % len(self.__images))
+        if self.__converted_images:
+            self.__index.set((self.__index.get() + 1) % len(self.__converted_images))
         if self.__animating.get():
             self.__schedule_tick()
 
     def __schedule_tick(self):
         self.after(1000 // self.__fps.get(), self.__tick)
 
+    def __convert_image(self, image):
+        return ImageTk.PhotoImage(image)
 
-def convert_image(image):
-    return ImageTk.PhotoImage(image)
-
-
-def convert_images(images):
-    for image in images:
-        yield convert_image(image)
+    def __convert_images(self, images):
+        for image in images:
+            yield (image, self.__convert_image(image))
