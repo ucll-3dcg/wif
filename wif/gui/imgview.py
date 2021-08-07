@@ -11,7 +11,6 @@ class ImageViewer(tk.Frame):
         self.__menu = self.__create_menu()
         self.__images = []
         self.__create_variables()
-        self.pack()
         self.__create_widgets()
         self.__tick()
         self.__read_images_in_background(images)
@@ -19,8 +18,12 @@ class ImageViewer(tk.Frame):
     def __create_menu(self):
         menu = tk.Menu(self.master, tearoff=False)
         save_menu = tk.Menu(menu, tearoff=False)
-        save_menu.add_command(label='Save as mp4', underline=0, command=self.__save_as_mp4)
-        menu.add_cascade(menu=save_menu, label='Save', underline=0)
+        save_menu.add_command(label='Save as mp4',
+                              underline=0,
+                              command=self.__save_as_mp4)
+        menu.add_cascade(menu=save_menu,
+                         label='Save',
+                         underline=0)
         return menu
 
     def __save_as_mp4(self):
@@ -39,16 +42,23 @@ class ImageViewer(tk.Frame):
             while not channel.empty:
                 image = channel.receive()
                 self.__images.append(image)
-            self.__frame_slider.configure(to=len(self.__images) - 1)
+            self.__framecount.set(len(self.__images))
             if not channel.finished:
                 self.after(100, fetch_images_from_channel)
 
         fetch_images_from_channel()
 
     def __create_variables(self):
-        self.__create_index_variable()
+        self.__create_frame_index_variable()
+        self.__create_framecount_variable()
         self.__create_animating_variable()
         self.__create_fps_variable()
+
+    def __create_framecount_variable(self):
+        def callback(var, idx, mode):
+            self.__frame_slider.configure(to=self.__framecount.get() - 1)
+        self.__framecount = tk.IntVar(value=0)
+        self.__framecount.trace_add('write', callback)
 
     def __create_animating_variable(self):
         def callback(var, idx, mode):
@@ -57,7 +67,7 @@ class ImageViewer(tk.Frame):
         self.__animating = tk.BooleanVar(value=True)
         self.__animating.trace_add('write', callback)
 
-    def __create_index_variable(self):
+    def __create_frame_index_variable(self):
         def callback(var, idx, mode):
             self.__update()
         self.__index = tk.IntVar(value=0)
