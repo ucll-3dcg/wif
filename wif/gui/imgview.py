@@ -95,28 +95,47 @@ class ImageViewer(tk.Frame):
     def __create_frame_index_variable(self):
         def callback(var, idx, mode):
             self.__update()
-        self.__index = tk.IntVar(value=0)
-        self.__index.trace_add('write', callback)
+        self.__image_index = tk.IntVar(value=0)
+        self.__image_index.trace_add('write', callback)
 
     def __create_fps_variable(self):
         self.__fps = tk.IntVar(value=30)
 
     def __create_widgets(self):
+        self.__create_top_frame()
+        self.__create_center_frame()
+        self.__update()
+
+    def __create_top_frame(self):
         self.__top_frame = tk.Frame(self)
-        self.__center_frame = tk.Frame(self)
         self.__top_frame.pack(side='top', fill='x')
+
+        self.__frame_slider = tk.Scale(self.__top_frame,
+                                       variable=self.__image_index,
+                                       from_=0,
+                                       to=0,
+                                       orient=tk.HORIZONTAL)
+        self.__frame_slider.pack(fill='x')
+
+        fps_slider = tk.Scale(self.__top_frame,
+                              variable=self.__fps,
+                              from_=1,
+                              to=60,
+                              orient=tk.HORIZONTAL)
+        fps_slider.pack(fill='x')
+
+        animation_checkbox = tk.Checkbutton(self.__top_frame,
+                                            text="Animate",
+                                            variable=self.__animating)
+        animation_checkbox.pack()
+
+    def __create_center_frame(self):
+        self.__center_frame = tk.Frame(self)
         self.__center_frame.pack(expand=True)
 
-        self.__frame_slider = tk.Scale(self.__top_frame, variable=self.__index, from_=0, to=0, orient=tk.HORIZONTAL)
-        self.__frame_slider.pack(fill='x')
-        fps_slider = tk.Scale(self.__top_frame, variable=self.__fps, from_=1, to=60, orient=tk.HORIZONTAL)
-        fps_slider.pack(fill='x')
-        animation_checkbox = tk.Checkbutton(self.__top_frame, text="Animate", variable=self.__animating)
-        animation_checkbox.pack()
         self.__label = tk.Label(self.__center_frame, anchor=tk.CENTER)
-        self.__label.pack()
         self.__label.bind('<Button-3>', self.__show_context_menu)
-        self.__update()
+        self.__label.pack()
 
     def __show_context_menu(self, event):
         try:
@@ -126,13 +145,15 @@ class ImageViewer(tk.Frame):
 
     def __update(self):
         if self.__converted_images:
-            image = self.__converted_images[self.__index.get()]
+            index = self.__image_index.get()
+            image = self.__converted_images[index]
             self.__label.configure(image=image)
             self.__label.image = image
 
     def __tick(self):
         if self.__converted_images:
-            self.__index.set((self.__index.get() + 1) % len(self.__converted_images))
+            new_index = (self.__image_index.get() + 1) % len(self.__converted_images)
+            self.__image_index.set(new_index)
         if self.__animating.get():
             self.__schedule_tick()
 
