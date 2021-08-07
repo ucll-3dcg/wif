@@ -6,7 +6,8 @@ import wif.concurrency
 from tkinter import filedialog
 
 
-_save_as_mp4_caption = 'Save as mp4'
+_save_movie_caption = 'Save movie'
+_save_frame_caption = 'Save frame'
 
 
 class ImageViewer(tk.Frame):
@@ -31,16 +32,32 @@ class ImageViewer(tk.Frame):
     def __create_menu(self):
         menu = tk.Menu(self.master, tearoff=False)
         self.__save_menu = tk.Menu(menu, tearoff=False)
-        self.__save_menu.add_command(label=_save_as_mp4_caption,
+        self.__save_menu.add_command(label=_save_movie_caption,
                                      state='disabled',
                                      underline=0,
-                                     command=self.__save_as_mp4)
+                                     command=self.__save_movie)
+        self.__save_menu.add_command(label=_save_frame_caption,
+                                     state='disabled',
+                                     underline=6,
+                                     command=self.__save_frame)
         menu.add_cascade(menu=self.__save_menu,
                          label='Save',
                          underline=0)
         return menu
 
-    def __save_as_mp4(self):
+    def __save_frame(self):
+        filetypes = [
+            ('PNG Files', '*.png'),
+            ('JPEG Files', '*.jpg'),
+        ]
+        filename = filedialog.asksaveasfilename(filetypes=filetypes,
+                                                defaultextension='.png')
+
+        if filename:
+            image = self.__original_images[self.__image_index.get()]
+            image.save(filename)
+
+    def __save_movie(self):
         filetypes = [('MP4 Files', '*.mp4')]
         filename = filedialog.asksaveasfilename(filetypes=filetypes,
                                                 defaultextension='.mp4')
@@ -71,7 +88,8 @@ class ImageViewer(tk.Frame):
         Called when all images have been received.
         '''
         self.__done_receiving_images = True
-        self.__save_menu.entryconfig(_save_as_mp4_caption, state='normal')
+        self.__save_menu.entryconfig(_save_movie_caption, state='normal')
+        self.__save_menu.entryconfig(_save_frame_caption, state='normal')
 
     def __create_variables(self):
         self.__create_frame_index_variable()
