@@ -94,14 +94,17 @@ def read_lines_from_stream(stream):
         yield line
 
 
-def open_subprocess(command, input):
+def open_subprocess(command, input, ignore_stderr=False):
     process = subprocess.Popen(
         command,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+        stderr=None if ignore_stderr else subprocess.PIPE)
 
     process.stdin.write(input.encode('ascii'))
     process.stdin.close()
 
-    return (process.stdout, process.stderr)
+    if ignore_stderr:
+        return (process.stdout, None)
+    else:
+        return (process.stdout, process.stderr)
