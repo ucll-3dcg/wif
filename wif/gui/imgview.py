@@ -12,8 +12,15 @@ class ImageViewer(tk.Frame):
         self.__images = []
         self.__create_variables()
         self.__create_widgets()
+        self.__create_keybindings()
         self.__tick()
         self.__read_images_in_background(images)
+
+    def __create_keybindings(self):
+        self.bind_all('<space>', lambda event: self.__toggle_animation())
+
+    def __toggle_animation(self):
+        self.__animating.set(not self.__animating.get())
 
     def __create_menu(self):
         menu = tk.Menu(self.master, tearoff=False)
