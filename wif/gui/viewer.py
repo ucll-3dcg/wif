@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-import wif.io
 from wif.gui.imgview import ImageViewer
 import wif.bgworker
 import wif.raytracer

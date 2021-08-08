@@ -1,5 +1,5 @@
 import wif.gui.imgview
-import wif.io
+import wif.encoding
 import wif.config
 import wif.reading
 import wif.concurrency

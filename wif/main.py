@@ -2,8 +2,6 @@
 
 import asyncio
 import wif.reading
-# from wif.io import read_blocks_from_file, read_blocks_from_stdin, read_images
-import wif.io
 import wif.config
 import wif.bgworker
 import wif.gui.imgview
@@ -92,7 +90,7 @@ async def _chai_to_mp4(args):
     script = _read_script(args.input)
     target_filename = args.output
     images, _ = wif.raytracer.raytrace(script, ignore_messages=True)
-    wif.io.create_mp4(images, target_filename)
+    wif.encoding.create_mp4(images, target_filename)
 
 
 async def _chai_to_gui(args):
@@ -107,7 +105,7 @@ async def _wif_to_mp4(args):
     else:
         blocks = wif.reading.read_blocks_from_file(args.input)
     images = wif.reading.read_images(blocks)
-    wif.io.create_mp4(images, args.output)
+    wif.encoding.create_mp4(images, args.output)
 
 
 async def _wif_to_gui(args):
@@ -168,10 +166,10 @@ async def _delete_configuration_file(args):
 
 def _process_command_line_arguments():
     parser = argparse.ArgumentParser()
-    parser.set_defaults(func=lambda args: parser.print_help())
-    subparsers = parser.add_subparsers()
-
+    parser.set_defaults(func=gui)
     parser.add_argument('--version', action='version', version=__version__)
+
+    subparsers = parser.add_subparsers()
 
     subparser = subparsers.add_parser('info', help='prints information about the given WIF file')
     subparser.add_argument('input', type=str, default='STDIN', nargs='?')
@@ -195,12 +193,7 @@ def _process_command_line_arguments():
     subparser.set_defaults(func=_delete_configuration_file)
 
     args = parser.parse_args()
-
-    wif.bgworker.init()
-    try:
-        asyncio.run(args.func(args))
-    finally:
-        wif.bgworker.exit()
+    asyncio.run(args.func(args))
 
 
 def main():

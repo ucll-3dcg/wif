@@ -1,6 +1,6 @@
 from PIL import ImageTk
 import tkinter as tk
-import wif.io
+import wif.encoding
 import wif.bgworker
 import wif.concurrency
 from tkinter import filedialog
@@ -63,7 +63,7 @@ class ImageViewer(tk.Frame):
                                                 defaultextension='.mp4')
         if filename:
             def task():
-                wif.io.create_mp4(self.__original_images, filename)
+                wif.encoding.create_mp4(self.__original_images, filename)
             wif.concurrency.run_in_background(task)
 
     def __read_images_in_background(self, images):

@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
-import wif.io
 import wif.bgworker
 import wif.raytracer
 import wif.gui.msgview
