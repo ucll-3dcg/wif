@@ -1,7 +1,6 @@
 from PIL import ImageTk
 import tkinter as tk
 import wif.encoding
-import wif.bgworker
 import wif.concurrency
 from tkinter import filedialog
 

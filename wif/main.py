@@ -3,7 +3,6 @@
 import asyncio
 import wif.reading
 import wif.config
-import wif.bgworker
 import wif.gui.imgview
 from wif.gui.studio import ViewerWindow
 from wif.gui.studio import StudioApplication
