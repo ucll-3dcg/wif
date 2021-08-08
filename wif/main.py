@@ -95,20 +95,6 @@ async def _chai_to_mp4(args):
     images, _ = wif.raytracer.raytrace(script, ignore_messages=True)
     wif.io.create_mp4(images, target_filename)
 
-    # async def write_to_mp4(stream):
-    #     blocks = wif.io.read_blocks_from_async_stream(stream)
-    #     images = wif.io.read_images(blocks)
-    #     await wif.io.create_mp4(images, args.output)
-
-    # output_stream = os.devnull if args.quiet else sys.stdout
-    # print_messages = create_message_printer(output_stream)
-    # script = _read_script(args.input)
-
-    # await wif.raytracer.render_script(
-    #     script,
-    #     stdout_receiver=write_to_mp4,
-    #     stderr_receiver=print_messages)
-
 
 async def _chai_to_gui(args):
     script = _read_script(args.input)
