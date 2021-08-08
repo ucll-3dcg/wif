@@ -25,7 +25,7 @@ def open_output_stream(filename):
             yield file
 
 
-async def info(args):
+def info(args):
     if args.input == '-':
         blocks = wif.reading.read_blocks_from_stream()
     else:
@@ -43,7 +43,7 @@ async def info(args):
             print(f"Frame {index} has size {size[0]}x{size[1]}")
 
 
-async def gui(args):
+def gui(args):
     StudioApplication().mainloop()
 
 
@@ -55,17 +55,7 @@ def _read_script(input):
             return file.read()
 
 
-def create_message_printer(output_stream):
-    async def printer(input_stream):
-        while True:
-            data = await input_stream.readline()
-            print(data.decode('ascii'), end='', file=output_stream)
-            if not data:
-                break
-    return printer
-
-
-async def _chai_to_wif(args):
+def _chai_to_wif(args):
     script = _read_script(args.input)
     (blocks, messages) = wif.raytracer.invoke_raytracer(script)
 
@@ -85,20 +75,20 @@ async def _chai_to_wif(args):
     t2.join()
 
 
-async def _chai_to_mp4(args):
+def _chai_to_mp4(args):
     script = _read_script(args.input)
     target_filename = args.output
     images, _ = wif.raytracer.raytrace(script, ignore_messages=True)
     wif.encoding.create_mp4(images, target_filename)
 
 
-async def _chai_to_gui(args):
+def _chai_to_gui(args):
     script = _read_script(args.input)
     images, messages = wif.raytracer.raytrace(script)
     ViewerWindow(None, images, messages).mainloop()
 
 
-async def _wif_to_mp4(args):
+def _wif_to_mp4(args):
     if args.input == '-':
         blocks = wif.reading.read_blocks_from_stream(sys.stdin)
     else:
@@ -107,7 +97,7 @@ async def _wif_to_mp4(args):
     wif.encoding.create_mp4(images, args.output)
 
 
-async def _wif_to_gui(args):
+def _wif_to_gui(args):
     if args.input == '-':
         blocks = wif.reading.read_blocks_from_stdin()
     else:
@@ -116,42 +106,42 @@ async def _wif_to_gui(args):
     ViewerWindow(None, images).mainloop()
 
 
-async def _convert(args):
+def _convert(args):
     input = args.input
     output = args.output
 
     if input.endswith('chai'):
         if output.endswith('wif'):
-            await _chai_to_wif(args)
+            _chai_to_wif(args)
         elif output.endswith('mp4'):
-            await _chai_to_mp4(args)
+            _chai_to_mp4(args)
         elif output == 'gui':
-            await _chai_to_gui(args)
+            _chai_to_gui(args)
         else:
             print('Unsupported conversion')
     elif input.endswith('wif'):
         if output.endswith('mp4'):
-            await _wif_to_mp4(args)
+            _wif_to_mp4(args)
         elif output == 'gui':
-            await _wif_to_gui(args)
+            _wif_to_gui(args)
         else:
             print('Unsupported conversion')
     else:
         print('Unsupported conversion')
 
 
-async def _convert_to_movie(args):
+def _convert_to_movie(args):
     input = args.input
 
     if input.endswith('chai'):
-        await _chai_to_mp4(args)
+        _chai_to_mp4(args)
     elif input.endswith('wif'):
-        await _wif_to_mp4(args)
+        _wif_to_mp4(args)
     else:
         print('Unsupported conversion')
 
 
-async def _extract_frame(args):
+def _extract_frame(args):
     input = args.input
     frame_index = args.frame
     output = args.output
@@ -168,7 +158,8 @@ async def _extract_frame(args):
     image = list(images)[frame_index]
     image.save(output)
 
-async def _configure(args):
+
+def _configure(args):
     if not args.setting:
         print(f'Configuration file can be found at {wif.config.get_configuration_path()}')
     elif not args.value:
@@ -187,7 +178,7 @@ async def _configure(args):
         wif.config.write()
 
 
-async def _delete_configuration_file(args):
+def _delete_configuration_file(args):
     wif.config.reset_configuration()
 
 
@@ -233,7 +224,7 @@ def _process_command_line_arguments():
     subparser.set_defaults(func=_delete_configuration_file)
 
     args = parser.parse_args()
-    asyncio.run(args.func(args))
+    args.func(args)
 
 
 def main():
