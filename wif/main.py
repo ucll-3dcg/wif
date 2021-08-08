@@ -140,6 +140,34 @@ async def _convert(args):
         print('Unsupported conversion')
 
 
+async def _convert_to_movie(args):
+    input = args.input
+
+    if input.endswith('chai'):
+        await _chai_to_mp4(args)
+    elif input.endswith('wif'):
+        await _wif_to_mp4(args)
+    else:
+        print('Unsupported conversion')
+
+
+async def _extract_frame(args):
+    input = args.input
+    frame_index = args.frame
+    output = args.output
+
+    if input.endswith('chai'):
+        script = _read_script(input)
+        images, _ = wif.raytracer.raytrace(script, ignore_messages=True)
+    else:
+        if args.input == '-':
+            blocks = wif.reading.read_blocks_from_stream(sys.stdin)
+        else:
+            blocks = wif.reading.read_blocks_from_file(args.input)
+        images = wif.reading.read_images(blocks)
+    image = list(images)[frame_index]
+    image.save(output)
+
 async def _configure(args):
     if not args.setting:
         print(f'Configuration file can be found at {wif.config.get_configuration_path()}')
@@ -182,6 +210,19 @@ def _process_command_line_arguments():
     subparser.add_argument('output', type=str)
     subparser.add_argument('-q', '--quiet', action='store_true')
     subparser.set_defaults(func=_convert)
+
+    subparser = subparsers.add_parser('movie', help='converts to movie')
+    subparser.add_argument('input', type=str)
+    subparser.add_argument('output', type=str)
+    subparser.add_argument('-q', '--quiet', action='store_true')
+    subparser.set_defaults(func=_convert_to_movie)
+
+    subparser = subparsers.add_parser('frame', help='extracts single frame')
+    subparser.add_argument('input', type=str)
+    subparser.add_argument('frame', type=int)
+    subparser.add_argument('output', type=str)
+    subparser.add_argument('-q', '--quiet', action='store_true')
+    subparser.set_defaults(func=_extract_frame)
 
     subparser = subparsers.add_parser('config', help='configure')
     subparser.add_argument('setting', type=str, nargs='?')
