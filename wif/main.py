@@ -2,7 +2,7 @@
 
 import asyncio
 import wif.reading
-from wif.io import read_blocks_from_file, read_blocks_from_stdin, read_images
+# from wif.io import read_blocks_from_file, read_blocks_from_stdin, read_images
 import wif.io
 import wif.config
 import wif.bgworker
@@ -14,7 +14,6 @@ import wif.raytracer
 import wif.concurrency
 import contextlib
 import argparse
-import tkinter as tk
 import sys
 import os
 from threading import Thread
@@ -31,11 +30,11 @@ def open_output_stream(filename):
 
 async def info(args):
     if args.input == '-':
-        blocks = read_blocks_from_stdin()
+        blocks = wif.reading.read_blocks_from_stream()
     else:
-        blocks = read_blocks_from_file(args.input)
+        blocks = wif.reading.read_blocks_from_file(args.input)
     sizes = []
-    async for image in read_images(blocks):
+    for image in wif.reading.read_images(blocks):
         sizes.append((image.width, image.height))
         image.close()
     if len(set(sizes)) == 1:
