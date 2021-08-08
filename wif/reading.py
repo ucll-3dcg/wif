@@ -3,10 +3,11 @@ import struct
 from PIL import Image
 import re
 import subprocess
+from wif.config import configuration
 
 
 def read_blocks_from_stream(stream):
-    block_size = 500000
+    block_size = configuration['block_size']
 
     while True:
         block = stream.read(block_size)
@@ -15,8 +16,8 @@ def read_blocks_from_stream(stream):
         yield block
 
 
-def read_blocks_from_file(path, block_size=500000):
-    block_size = 500000
+def read_blocks_from_file(path):
+    block_size = configuration['block_size']
 
     with open(path) as stream:
         while True:

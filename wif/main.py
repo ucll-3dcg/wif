@@ -31,9 +31,9 @@ def open_output_stream(filename):
 
 async def info(args):
     if args.input == '-':
-        blocks = read_blocks_from_stdin(500000)
+        blocks = read_blocks_from_stdin()
     else:
-        blocks = read_blocks_from_file(args.input, 500000)
+        blocks = read_blocks_from_file(args.input)
     sizes = []
     async for image in read_images(blocks):
         sizes.append((image.width, image.height))
@@ -159,22 +159,21 @@ async def _convert(args):
 
 
 async def _configure(args):
-    if not args.path:
+    if not args.setting:
         print(f'Configuration file can be found at {wif.config.get_configuration_path()}')
-        print(wif.config.configuration)
     elif not args.value:
-        print(wif.config.configuration[args.path])
+        print(wif.config.configuration[args.setting])
     else:
-        path = args.path
+        setting = args.setting
         value = args.value
-        if path == 'raytracer':
+        if setting == 'raytracer':
             if os.path.exists(value):
                 absolute_path = os.path.abspath(value)
                 wif.config.configuration['raytracer'] = absolute_path
-        elif path == 'block_size':
+        elif setting == 'block_size':
             wif.config.configuration['block_size'] = int(value)
         else:
-            raise KeyError(f'Unrecognized configuration path {path}')
+            raise KeyError(f'Unrecognized configuration setting {setting}')
         wif.config.write()
 
 
@@ -203,7 +202,7 @@ def _process_command_line_arguments():
     subparser.set_defaults(func=_convert)
 
     subparser = subparsers.add_parser('config', help='configure')
-    subparser.add_argument('path', type=str, nargs='?')
+    subparser.add_argument('setting', type=str, nargs='?')
     subparser.add_argument('value', type=str, nargs='?')
     subparser.set_defaults(func=_configure)
 
