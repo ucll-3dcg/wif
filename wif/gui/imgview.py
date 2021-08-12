@@ -75,6 +75,7 @@ class ImageViewer(tk.Frame):
                 self.__original_images.append(original_image)
                 self.__converted_images.append(converted_image)
             self.__framecount.set(len(self.__converted_images))
+            self.__status.set(f'Received frame #{self.__framecount.get()}')
             if not channel.finished:
                 self.after(100, fetch_images_from_channel)
             else:
@@ -89,12 +90,17 @@ class ImageViewer(tk.Frame):
         self.__done_receiving_images = True
         self.__save_menu.entryconfig(_save_movie_caption, state='normal')
         self.__save_menu.entryconfig(_save_frame_caption, state='normal')
+        self.__status.set(f'Finished! Received {self.__framecount.get()} frames')
 
     def __create_variables(self):
         self.__create_frame_index_variable()
         self.__create_framecount_variable()
         self.__create_animating_variable()
         self.__create_fps_variable()
+        self.__create_status_variable()
+
+    def __create_status_variable(self):
+        self.__status = tk.StringVar(value='')
 
     def __create_framecount_variable(self):
         def callback(var, idx, mode):
@@ -120,6 +126,7 @@ class ImageViewer(tk.Frame):
 
     def __create_widgets(self):
         self.__create_top_frame()
+        self.__create_status_bar()
         self.__create_center_frame()
         self.__update()
 
@@ -152,6 +159,15 @@ class ImageViewer(tk.Frame):
 
         self.__label = tk.Label(self.__center_frame, anchor=tk.CENTER)
         self.__label.bind('<Button-3>', self.__show_context_menu)
+        self.__label.pack()
+
+    def __create_status_bar(self):
+        self.__status_bar = tk.Frame(self)
+        self.__status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        self.__label = tk.Label(self.__status_bar,
+                                anchor=tk.W,
+                                textvariable=self.__status)
         self.__label.pack()
 
     def __show_context_menu(self, event):
