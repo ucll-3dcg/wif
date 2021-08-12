@@ -133,25 +133,40 @@ class ImageViewer(tk.Frame):
     def __create_top_frame(self):
         self.__top_frame = tk.Frame(self)
         self.__top_frame.pack(side='top', fill='x')
+        self.__top_frame.columnconfigure(1, weight=5)
+
+        frame_label = tk.Label(self.__top_frame, text='Frame')
+        frame_label.grid(row=0, column=0, sticky=(tk.E, tk.W, tk.S, tk.N))
 
         self.__frame_slider = tk.Scale(self.__top_frame,
                                        variable=self.__image_index,
                                        from_=0,
                                        to=0,
+                                       showvalue=False,
                                        orient=tk.HORIZONTAL)
-        self.__frame_slider.pack(fill='x')
+        self.__frame_slider.grid(row=0, column=1, sticky=(tk.W, tk.E))
+
+        frame_value_label = tk.Label(self.__top_frame, textvariable=self.__image_index)
+        frame_value_label.grid(row=0, column=2, sticky=(tk.E, tk.W, tk.S, tk.N))
+
+        fps_label = tk.Label(self.__top_frame, text='FPS')
+        fps_label.grid(row=1, column=0, sticky=(tk.E, tk.W, tk.S, tk.N))
 
         fps_slider = tk.Scale(self.__top_frame,
                               variable=self.__fps,
                               from_=1,
                               to=60,
+                              showvalue=False,
                               orient=tk.HORIZONTAL)
-        fps_slider.pack(fill='x')
+        fps_slider.grid(row=1, column=1, sticky=(tk.W, tk.E))
+
+        fps_value_label = tk.Label(self.__top_frame, textvariable=self.__fps)
+        fps_value_label.grid(row=1, column=2, sticky=(tk.E, tk.W, tk.S, tk.N))
 
         animation_checkbox = tk.Checkbutton(self.__top_frame,
                                             text="Animate",
                                             variable=self.__animating)
-        animation_checkbox.pack()
+        animation_checkbox.grid(row=2, column=1)
 
     def __create_center_frame(self):
         self.__center_frame = tk.Frame(self)
