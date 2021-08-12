@@ -10,8 +10,13 @@ def _raytracer_path():
 
 
 def invoke_raytracer(script, ignore_messages=False):
+    command = [_raytracer_path()]
+    if ignore_messages:
+        command.append('--quiet')
+    command += ['-s', '-']
+
     (stdout, stderr) = wif.reading.open_subprocess(
-        [_raytracer_path(), '-s', '-'],
+        command,
         script,
         ignore_stderr=ignore_messages)
 
