@@ -13,6 +13,8 @@ class EditorTab:
         self.editor = tk.Text(frame)
         self.editor.pack(fill=tk.BOTH, expand=True)
         self.editor.insert('1.0', contents)
+        self.editor.focus_set()
+        self.editor.mark_set('insert', "0.0")
         self.__filename = filename
         tab_title = filename if filename else 'untitled'
         parent_notebook.add(frame, text=tab_title)
