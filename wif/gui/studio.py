@@ -34,6 +34,21 @@ class EditorTab:
             file.write(self.script)
 
 
+class MenuItem:
+    def __init__(self, parent, label):
+        self.__parent = parent
+        self.__label = label
+
+    def enable(self):
+        self.__set_state('normal')
+
+    def disable(self):
+        self.__set_state('disabled')
+
+    def __set_state(self, state):
+        self.__parent.entryconfigure(self.__label, state=state)
+
+
 class StudioApplication(tk.Frame):
     def __init__(self):
         self.root = tk.Tk()
@@ -42,6 +57,7 @@ class StudioApplication(tk.Frame):
         self.__create_menu()
         self.__create_notebook()
         self.__tabs = []
+        self.__update()
 
     def __initialize(self):
         self.root.geometry("1024x768")
@@ -54,16 +70,28 @@ class StudioApplication(tk.Frame):
 
     def __create_file_menu(self, menubar):
         file_menu = tk.Menu(menubar, tearoff=False)
-        file_menu.add_command(label="New script", underline=0, command=self.__new_script, accelerator="Ctrl+N")
+
+        def add_menu_item(label, command, accelerator):
+            index = label.index('_')
+            real_label = label[:index] + label[index+1:]
+            file_menu.add_command(label=real_label,
+                                  underline=index,
+                                  command=command,
+                                  accelerator=accelerator)
+            return MenuItem(file_menu, real_label)
+
+        self.__new_script_menu = add_menu_item('_New script', self.__new_script, "CTRL+N")
+        self.__open_file_menu = add_menu_item('_Open file', self.__open_file, "CTRL+O")
+        self.__save_menu = add_menu_item('_Save file', self.__save_file, "CTRL+S")
+        self.__save_as_menu = add_menu_item('Save file _as', self.__save_file_as, "ALT+S")
+        self.__render_menu = add_menu_item('_Render', self.__render_script, "F5")
+
         self.root.bind('<Control-n>', lambda event: self.__new_script())
-        file_menu.add_command(label="Open file", underline=0, command=self.__open_file, accelerator="Ctrl+O")
         self.root.bind('<Control-o>', lambda event: self.__open_file())
-        file_menu.add_command(label="Save file", underline=0, command=self.__save_file, accelerator="Ctrl+S")
         self.root.bind('<Control-s>', lambda event: self.__save_file())
-        file_menu.add_command(label="Save file as", underline=0, command=self.__save_file_as, accelerator="Alt+S")
         self.root.bind('<Alt-s>', lambda event: self.__save_file_as())
-        file_menu.add_command(label="Render", underline=0, command=self.__render_script, accelerator="F5")
         self.root.bind('<F5>', lambda event: self.__render_script())
+
         menubar.add_cascade(menu=file_menu, label="File", underline=0)
 
     def __render_script(self):
@@ -80,6 +108,7 @@ class StudioApplication(tk.Frame):
 
     def __new_script(self):
         self.__add_editor_tab(None, '')
+        self.__update()
 
     def __add_editor_tab(self, filename, contents):
         tab = EditorTab(self.__notebook, filename, contents)
@@ -104,6 +133,7 @@ class StudioApplication(tk.Frame):
             with open(filename) as file:
                 contents = file.read()
             self.__add_editor_tab(file.name, contents)
+        self.__update()
 
     def __save_file(self):
         tab = self.selected_tab
@@ -129,3 +159,13 @@ class StudioApplication(tk.Frame):
     @property
     def selected_tab(self):
         return self.__tabs[self.__selected_tab_index]
+
+    def __update(self):
+        if self.__tabs:
+            self.__save_menu.enable()
+            self.__save_as_menu.enable()
+            self.__render_menu.enable()
+        else:
+            self.__save_menu.disable()
+            self.__save_as_menu.disable()
+            self.__render_menu.disable()
