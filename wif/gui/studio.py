@@ -99,7 +99,7 @@ class StudioApplication(tk.Frame):
         images, messages = wif.raytracer.raytrace(script)
         self.__view(images, messages)
 
-    def __view(self, images, messages = None):
+    def __view(self, images, messages=None):
         ViewerWindow(tk.Toplevel(), images, messages)
 
     def __create_notebook(self):
