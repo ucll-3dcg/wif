@@ -12,7 +12,6 @@ def find_version():
     return version
 
 
-
 setup(
     name='wif',
     version=find_version(),
@@ -22,8 +21,8 @@ setup(
     author_email='frederic.vogels@ucll.be',
     license='MIT',
     packages=['wif'],
-    entry_points = {
-          'console_scripts': [ 'wif=wif.main:main']
+    entry_points={
+          'console_scripts': ['wif=wif.main:main']
     },
     install_requires=['pillow', 'numpy', 'opencv-contrib-python'],
     zip_safe=False)
