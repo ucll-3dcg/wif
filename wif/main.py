@@ -79,7 +79,7 @@ def _chai_to_mp4(args):
     script = _read_script(args.input)
     target_filename = args.output
     images, _ = wif.raytracer.raytrace(script, ignore_messages=True)
-    wif.encoding.create_mp4(images, target_filename)
+    wif.encoding.create_mp4(images, target_filename, codec=args.codec)
 
 
 def _chai_to_gui(args):
@@ -94,7 +94,7 @@ def _wif_to_mp4(args):
     else:
         blocks = wif.reading.read_blocks_from_file(args.input)
     images = wif.reading.read_images(blocks)
-    wif.encoding.create_mp4(images, args.output)
+    wif.encoding.create_mp4(images, args.output, codec=args.codec)
 
 
 def _wif_to_gui(args):
@@ -206,7 +206,8 @@ def _process_command_line_arguments():
     subparser.add_argument('input', type=str)
     subparser.add_argument('output', type=str)
     subparser.add_argument('-q', '--quiet', action='store_true')
-    subparser.set_defaults(func=_convert_to_movie)
+    subparser.add_argument('--codec', type=str)
+    subparser.set_defaults(func=_convert_to_movie, codec='avc1')
 
     subparser = subparsers.add_parser('frame', help='extracts single frame')
     subparser.add_argument('input', type=str)
