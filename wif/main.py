@@ -200,7 +200,7 @@ def _process_command_line_arguments():
     subparser.add_argument('input', type=str)
     subparser.add_argument('output', type=str)
     subparser.add_argument('-q', '--quiet', action='store_true')
-    subparser.set_defaults(func=_convert)
+    subparser.set_defaults(func=_convert, codec='avc1')
 
     subparser = subparsers.add_parser('movie', help='converts to movie')
     subparser.add_argument('input', type=str)
