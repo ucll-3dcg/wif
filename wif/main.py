@@ -68,8 +68,11 @@ def _chai_to_wif(args):
             for block in blocks:
                 file.write(block)
 
-    t1 = Thread(target=print_messages).start()
-    t2 = Thread(target=write_blocks).start()
+    t1 = Thread(target=print_messages)
+    t2 = Thread(target=write_blocks)
+
+    t1.start()
+    t2.start()
 
     t1.join()
     t2.join()
