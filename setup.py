@@ -20,7 +20,7 @@ setup(
     author='Frederic Vogels',
     author_email='frederic.vogels@ucll.be',
     license='MIT',
-    packages=['wif'],
+    packages=['wif', 'wif.gui'],
     entry_points={
           'console_scripts': ['wif=wif.main:main']
     },
