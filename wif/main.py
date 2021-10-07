@@ -27,7 +27,7 @@ def open_output_stream(filename):
 
 def info(args):
     if args.input == '-':
-        blocks = wif.reading.read_blocks_from_stream()
+        blocks = wif.reading.read_blocks_from_stream(sys.stdin)
     else:
         blocks = wif.reading.read_blocks_from_file(args.input)
     sizes = []
