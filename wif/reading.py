@@ -53,6 +53,29 @@ def read_frames(blocks):
             match = re.match(regex, buffer)
 
 
+def frame_to_linear_rgb(frame):
+    """
+    Converts a frame to a list of (R, G, B) triples.
+    """
+    # Read groups of 3 unsigned chars
+    pixels = list(struct.iter_unpack("3B", frame[8:]))
+
+    return pixels
+
+
+def frame_to_rgb(frame):
+    """
+    Converts a frame to a 2D list of (R, G, B) triples.
+    """
+    # Read two little endian 32 bit integers
+    width, height = struct.unpack('<2I', frame[:8])
+
+    # Read groups of 3 unsigned chars
+    pixels = list(struct.iter_unpack("3B", frame[8:]))
+
+    return [pixels[width*j:width*(j+1)] for j in range(height)]
+
+
 def frame_to_image(frame):
     '''
     Takes frame data and turns it into an image.
